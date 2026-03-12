@@ -8,7 +8,8 @@
     "login": "Sign In",
     "signup": "Join Us",
     "signout": "Sign Out",
-    "admin": "Admin"
+    "admin": "Admin",
+    "profile": "My Profile"
   },
   "hero": {
     "badge": "UT Austin Korea Alumni",
@@ -97,6 +98,25 @@
   "about": {
     "title": "About Us",
     "subtitle": "The University of Texas at Austin Korea Alumni Association"
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your account and profile information",
+    "profileInfo": "Profile Information",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updateProfile": "Update Profile",
+    "updatePassword": "Update Password",
+    "profileUpdated": "Profile updated successfully",
+    "passwordUpdated": "Password updated successfully",
+    "errors": {
+      "currentPasswordWrong": "Current password is incorrect",
+      "newPasswordShort": "New password must be at least 8 characters",
+      "passwordMismatch": "New passwords do not match",
+      "updateFailed": "Failed to update profile"
+    }
   },
   "common": {
     "loading": "Loading...",

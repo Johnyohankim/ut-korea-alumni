@@ -92,12 +92,24 @@ export default function Navbar() {
               {locale === 'ko' ? 'EN' : '한국어'}
             </button>
             {session ? (
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border-none bg-transparent ${textColor} hover:text-burnt-orange`}
-              >
-                {t('nav.signout')}
-              </button>
+              <div className="flex items-center gap-1">
+                <Link
+                  href="/profile"
+                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 no-underline ${
+                    isActive('/profile')
+                      ? 'bg-burnt-orange/10 text-burnt-orange'
+                      : `${textColor} hover:bg-burnt-orange/5 hover:text-burnt-orange`
+                  }`}
+                >
+                  {t('nav.profile')}
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border-none bg-transparent ${textColor} hover:text-burnt-orange`}
+                >
+                  {t('nav.signout')}
+                </button>
+              </div>
             ) : (
               <Link href="/login" className="btn-primary text-sm !py-2 !px-5 no-underline">
                 {t('nav.login')}
@@ -140,6 +152,18 @@ export default function Navbar() {
               </Link>
             ))}
             <hr className="border-charcoal/10 my-3" />
+            {session && (
+              <Link
+                href="/profile"
+                className={`block px-4 py-2.5 rounded-lg text-sm font-medium no-underline ${
+                  isActive('/profile')
+                    ? 'bg-burnt-orange/10 text-burnt-orange'
+                    : 'text-charcoal hover:bg-cream-light'
+                }`}
+              >
+                {t('nav.profile')}
+              </Link>
+            )}
             <div className="flex items-center gap-3 px-4">
               <button
                 onClick={toggleLanguage}

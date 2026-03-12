@@ -8,7 +8,8 @@
     "login": "로그인",
     "signup": "가입하기",
     "signout": "로그아웃",
-    "admin": "관리자"
+    "admin": "관리자",
+    "profile": "내 프로필"
   },
   "hero": {
     "badge": "UT Austin 한국 동문회",
@@ -97,6 +98,25 @@
   "about": {
     "title": "소개",
     "subtitle": "텍사스 대학교 오스틴 한국 동문회"
+  },
+  "profile": {
+    "title": "내 프로필",
+    "subtitle": "계정 및 프로필 정보를 관리하세요",
+    "profileInfo": "프로필 정보",
+    "changePassword": "비밀번호 변경",
+    "currentPassword": "현재 비밀번호",
+    "newPassword": "새 비밀번호",
+    "confirmNewPassword": "새 비밀번호 확인",
+    "updateProfile": "프로필 업데이트",
+    "updatePassword": "비밀번호 업데이트",
+    "profileUpdated": "프로필이 성공적으로 업데이트되었습니다",
+    "passwordUpdated": "비밀번호가 성공적으로 변경되었습니다",
+    "errors": {
+      "currentPasswordWrong": "현재 비밀번호가 올바르지 않습니다",
+      "newPasswordShort": "새 비밀번호는 8자 이상이어야 합니다",
+      "passwordMismatch": "새 비밀번호가 일치하지 않습니다",
+      "updateFailed": "프로필 업데이트에 실패했습니다"
+    }
   },
   "common": {
     "loading": "로딩 중...",
