@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useT } from '../components/LanguageProvider'
@@ -26,12 +26,15 @@ export default function ProfilePage() {
     currentPassword: '', newPassword: '', confirmNewPassword: ''
   })
 
+  const fetchedRef = useRef(false)
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login')
       return
     }
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && !fetchedRef.current) {
+      fetchedRef.current = true
       fetch('/api/profile')
         .then(res => res.json())
         .then(data => {
@@ -52,7 +55,7 @@ export default function ProfilePage() {
           setLoading(false)
         })
     }
-  }, [status, router, t])
+  }, [status, router])
 
   const update = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }))
   const updatePassword = (field) => (e) => setPasswordForm(prev => ({ ...prev, [field]: e.target.value }))
