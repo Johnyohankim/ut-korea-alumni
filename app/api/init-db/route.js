@@ -40,6 +40,9 @@ export async function GET(request) {
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255)`
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP`
 
+    // Auto-verify existing approved members so they aren't locked out
+    await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
+
     // Events table
     await sql`
       CREATE TABLE IF NOT EXISTS events (
