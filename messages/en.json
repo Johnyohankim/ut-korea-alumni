@@ -60,7 +60,8 @@
       "death": "Condolence",
       "promotion": "Promotion",
       "jobChange": "Job Change",
-      "seekingEmployment": "Seeking Employment"
+      "seekingEmployment": "Seeking Employment",
+      "birthday": "Birthday"
     },
     "approval": {
       "pending": "Pending",
@@ -112,6 +113,8 @@
     "location": "Current City",
     "company": "Company",
     "jobTitle": "Job Title",
+    "birthday": "Birthday (YYMMDD)",
+    "birthdayPlaceholder": "e.g. 900315",
     "bio": "Short Bio",
     "loginBtn": "Sign In",
     "signupBtn": "Create Account",

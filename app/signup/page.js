@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({
     email: '', password: '', confirmPassword: '',
     name: '', nameKo: '', graduationYear: '', major: '',
-    location: '', company: '', title: '', bio: ''
+    location: '', company: '', title: '', birthday: '', bio: ''
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -153,9 +153,15 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-charcoal mb-1.5">{t('auth.jobTitle')}</label>
-            <input type="text" value={form.title} onChange={update('title')} className={inputClass} placeholder="Software Engineer" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-1.5">{t('auth.jobTitle')}</label>
+              <input type="text" value={form.title} onChange={update('title')} className={inputClass} placeholder="Software Engineer" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-1.5">{t('auth.birthday')}</label>
+              <input type="text" value={form.birthday} onChange={update('birthday')} className={inputClass} placeholder={t('auth.birthdayPlaceholder')} maxLength={6} pattern="[0-9]{6}" />
+            </div>
           </div>
 
           <div>

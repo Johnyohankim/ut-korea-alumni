@@ -6,7 +6,7 @@ import { sendVerificationEmail } from '@/lib/email'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { email, password, name, nameKo, graduationYear, major, location, company, title, bio } = body
+    const { email, password, name, nameKo, graduationYear, major, location, company, title, bio, birthday } = body
 
     if (!email || !password || !name) {
       return Response.json({ error: 'Email, password, and name are required' }, { status: 400 })
@@ -27,8 +27,8 @@ export async function POST(request) {
     const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
     const { rows } = await sql`
-      INSERT INTO members (email, password_hash, name, name_ko, graduation_year, major, location, company, title, bio, email_verified, verification_token, verification_token_expires)
-      VALUES (${email}, ${passwordHash}, ${name}, ${nameKo || null}, ${graduationYear ? parseInt(graduationYear) : null}, ${major || null}, ${location || null}, ${company || null}, ${title || null}, ${bio || null}, false, ${verificationToken}, ${tokenExpires.toISOString()})
+      INSERT INTO members (email, password_hash, name, name_ko, graduation_year, major, location, company, title, bio, birthday, email_verified, verification_token, verification_token_expires)
+      VALUES (${email}, ${passwordHash}, ${name}, ${nameKo || null}, ${graduationYear ? parseInt(graduationYear) : null}, ${major || null}, ${location || null}, ${company || null}, ${title || null}, ${bio || null}, ${birthday || null}, false, ${verificationToken}, ${tokenExpires.toISOString()})
       RETURNING id, email, name
     `
 

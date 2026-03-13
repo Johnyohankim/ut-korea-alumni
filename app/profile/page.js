@@ -19,7 +19,7 @@ export default function ProfilePage() {
 
   const [form, setForm] = useState({
     name: '', nameKo: '', graduationYear: '', major: '',
-    location: '', company: '', title: '', bio: ''
+    location: '', company: '', title: '', birthday: '', bio: ''
   })
 
   const [passwordForm, setPasswordForm] = useState({
@@ -46,6 +46,7 @@ export default function ProfilePage() {
             location: data.location || '',
             company: data.company || '',
             title: data.title || '',
+            birthday: data.birthday || '',
             bio: data.bio || '',
           })
           setLoading(false)
@@ -199,9 +200,15 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-1.5">{t('auth.jobTitle')}</label>
-              <input type="text" value={form.title} onChange={update('title')} className={inputClass} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-1.5">{t('auth.jobTitle')}</label>
+                <input type="text" value={form.title} onChange={update('title')} className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-1.5">{t('auth.birthday')}</label>
+                <input type="text" value={form.birthday} onChange={update('birthday')} className={inputClass} placeholder={t('auth.birthdayPlaceholder')} maxLength={6} pattern="[0-9]{6}" />
+              </div>
             </div>
 
             <div>

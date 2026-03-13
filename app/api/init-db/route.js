@@ -44,6 +44,9 @@ export async function GET(request) {
     // Add membership level column to existing tables
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS membership_level VARCHAR(20) DEFAULT 'general'`
 
+    // Add birthday column (MMDD format for annual matching)
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS birthday VARCHAR(6)`
+
     // Auto-verify existing approved members so they aren't locked out
     await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
 

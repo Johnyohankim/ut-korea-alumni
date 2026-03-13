@@ -60,7 +60,8 @@
       "death": "부고",
       "promotion": "승진",
       "jobChange": "이직",
-      "seekingEmployment": "구직"
+      "seekingEmployment": "구직",
+      "birthday": "생일"
     },
     "approval": {
       "pending": "승인 대기",
@@ -112,6 +113,8 @@
     "location": "현재 거주 도시",
     "company": "직장",
     "jobTitle": "직함",
+    "birthday": "생년월일 (YYMMDD)",
+    "birthdayPlaceholder": "예: 900315",
     "bio": "간단한 소개",
     "loginBtn": "로그인",
     "signupBtn": "계정 만들기",
