@@ -6,9 +6,23 @@ import { parseStringPromise } from 'xml2js'
 const EN_RSS = 'https://www.sxsk.news/tag/english/rss/'
 const KO_RSS = 'https://www.sxsk.news/tag/korean/rss/'
 
+function decodeEntities(str) {
+  if (!str) return str
+  return str
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+}
+
 function stripHtml(html) {
   return html
     .replace(/<[^>]*>/g, '')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -110,6 +124,24 @@ function matchArticles(enItems, koItems) {
   return matched
 }
 
+export async function DELETE() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.isAdmin) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const { rows } = await sql`
+      DELETE FROM news WHERE external_url IS NOT NULL AND category = 'news'
+      RETURNING id
+    `
+    return Response.json({ success: true, deleted: rows.length })
+  } catch (error) {
+    console.error('Clear scraped news error:', error)
+    return Response.json({ error: error.message }, { status: 500 })
+  }
+}
+
 export async function POST() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) {
@@ -145,8 +177,8 @@ export async function POST() {
         continue
       }
 
-      const title = en ? en.title : (ko ? ko.title : 'Untitled')
-      const titleKo = ko ? ko.title : null
+      const title = en ? decodeEntities(en.title) : (ko ? decodeEntities(ko.title) : 'Untitled')
+      const titleKo = ko ? decodeEntities(ko.title) : null
       const content = en ? stripHtml(en.description || '') : (ko ? stripHtml(ko.description || '') : '')
       const contentKo = ko ? stripHtml(ko.description || '') : null
       const externalUrl = enUrl || koUrl

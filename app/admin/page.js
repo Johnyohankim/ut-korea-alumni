@@ -136,6 +136,29 @@ export default function AdminPage() {
     setScraping(false)
   }
 
+  const handleClearAndResync = async () => {
+    if (!confirm('This will delete all scraped SXSK articles and re-import them. Continue?')) return
+    setScraping(true)
+    setScrapeResult(null)
+    try {
+      const delRes = await fetch('/api/admin/scrape-news', { method: 'DELETE' })
+      const delData = await delRes.json()
+      if (!delRes.ok) { setScrapeResult(`Error clearing: ${delData.error}`); setScraping(false); return }
+
+      const res = await fetch('/api/admin/scrape-news', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setScrapeResult(`Cleared ${delData.deleted} old articles. Re-imported ${data.imported} articles.`)
+        fetchAll()
+      } else {
+        setScrapeResult(`Cleared ${delData.deleted} but import failed: ${data.error}`)
+      }
+    } catch {
+      setScrapeResult('Failed to clear & re-sync.')
+    }
+    setScraping(false)
+  }
+
   const handleDeleteNews = async (id) => {
     if (!confirm('Delete this article?')) return
     await fetch(`/api/news/${id}`, { method: 'DELETE' })
@@ -401,13 +424,22 @@ export default function AdminPage() {
                 <h4 className="font-semibold text-charcoal text-sm">Sync from SXSK.news</h4>
                 <p className="text-xs text-charcoal-light mt-0.5">Import articles from the sxsk.news RSS feed (English + Korean)</p>
               </div>
-              <button
-                onClick={handleScrape}
-                disabled={scraping}
-                className="px-4 py-2 bg-burnt-orange text-white text-xs font-semibold rounded-lg cursor-pointer border-none hover:bg-burnt-orange/90 disabled:opacity-50 whitespace-nowrap"
-              >
-                {scraping ? 'Syncing...' : 'Sync Now'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleScrape}
+                  disabled={scraping}
+                  className="px-4 py-2 bg-burnt-orange text-white text-xs font-semibold rounded-lg cursor-pointer border-none hover:bg-burnt-orange/90 disabled:opacity-50 whitespace-nowrap"
+                >
+                  {scraping ? 'Syncing...' : 'Sync Now'}
+                </button>
+                <button
+                  onClick={handleClearAndResync}
+                  disabled={scraping}
+                  className="px-4 py-2 bg-red-100 text-red-700 text-xs font-semibold rounded-lg cursor-pointer border-none hover:bg-red-200 disabled:opacity-50 whitespace-nowrap"
+                >
+                  {scraping ? 'Working...' : 'Clear & Re-sync'}
+                </button>
+              </div>
             </div>
             {scrapeResult && (
               <div className={`mb-6 px-4 py-2 rounded-lg text-sm ${scrapeResult.startsWith('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
