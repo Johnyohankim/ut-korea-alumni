@@ -5,20 +5,32 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useT } from '../components/LanguageProvider'
 
-function MemberCard({ member }) {
+function MemberCard({ member, t }) {
   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+
+  const levelStyles = {
+    executive: { avatar: 'from-amber-500 to-yellow-400', badge: 'bg-amber-100 text-amber-800 border-amber-200', label: t('membership.executive') },
+    full: { avatar: 'from-burnt-orange to-gold', badge: 'bg-blue-50 text-blue-700 border-blue-200', label: t('membership.full') },
+    general: { avatar: 'from-charcoal-light to-charcoal/60', badge: 'bg-gray-100 text-gray-600 border-gray-200', label: t('membership.general') },
+  }
+  const level = levelStyles[member.membership_level] || levelStyles.general
 
   return (
     <div className="card p-6 flex items-start gap-4">
       {/* Avatar */}
-      <div className="shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-burnt-orange to-gold flex items-center justify-center text-white font-display font-bold text-lg">
+      <div className={`shrink-0 w-14 h-14 rounded-full bg-gradient-to-br ${level.avatar} flex items-center justify-center text-white font-display font-bold text-lg`}>
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-display text-base font-semibold text-charcoal truncate">
-          {member.name}
-          {member.name_ko && <span className="text-charcoal-light font-body font-normal ml-1.5 text-sm">({member.name_ko})</span>}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-display text-base font-semibold text-charcoal truncate">
+            {member.name}
+            {member.name_ko && <span className="text-charcoal-light font-body font-normal ml-1.5 text-sm">({member.name_ko})</span>}
+          </h3>
+          <span className={`shrink-0 text-[0.6rem] font-bold px-1.5 py-0.5 rounded border ${level.badge}`}>
+            {level.label}
+          </span>
+        </div>
         {member.graduation_year && (
           <p className="text-xs text-burnt-orange font-semibold mt-0.5">Class of {member.graduation_year}</p>
         )}
@@ -137,7 +149,7 @@ export default function MembersPage() {
           <div className="text-center py-16 text-charcoal-light">{t('members.noMembers')}</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {members.map(m => <MemberCard key={m.id} member={m} />)}
+            {members.map(m => <MemberCard key={m.id} member={m} t={t} />)}
           </div>
         )}
       </div>
