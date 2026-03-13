@@ -120,6 +120,7 @@
     "signupBtn": "계정 만들기",
     "noAccount": "계정이 없으신가요?",
     "hasAccount": "이미 계정이 있으신가요?",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
     "pendingApproval": "관리자 승인 대기 중입니다. 승인 후 접근 가능합니다.",
     "errors": {
       "invalid": "이메일 또는 비밀번호가 올바르지 않습니다",
@@ -204,6 +205,25 @@
   "permissions": {
     "noWriteAccess": "글 작성은 정회원 또는 임원만 가능합니다.",
     "noEventAccess": "행사 등록은 임원만 가능합니다."
+  },
+  "forgotPassword": {
+    "title": "비밀번호 찾기",
+    "subtitle": "비밀번호 재설정 링크를 받을 이메일을 입력하세요",
+    "submitBtn": "재설정 링크 발송",
+    "backToLogin": "로그인으로 돌아가기",
+    "sentTitle": "이메일을 확인하세요",
+    "sentMessage": "해당 이메일로 등록된 계정이 있으면 비밀번호 재설정 링크를 발송했습니다. 받은 편지함을 확인해 주세요."
+  },
+  "resetPassword": {
+    "title": "비밀번호 재설정",
+    "subtitle": "새 비밀번호를 입력하세요",
+    "submitBtn": "비밀번호 재설정",
+    "successTitle": "비밀번호 변경 완료!",
+    "successMessage": "비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인할 수 있습니다.",
+    "invalidTitle": "유효하지 않은 링크",
+    "invalidMessage": "비밀번호 재설정 링크가 유효하지 않습니다. 새 링크를 요청해 주세요.",
+    "expiredMessage": "비밀번호 재설정 링크가 만료되었습니다. 새 링크를 요청해 주세요.",
+    "requestNew": "새 링크 요청"
   },
   "common": {
     "loading": "로딩 중...",

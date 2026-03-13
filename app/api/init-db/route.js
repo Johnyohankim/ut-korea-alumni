@@ -47,6 +47,10 @@ export async function GET(request) {
     // Add birthday column (MMDD format for annual matching)
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS birthday VARCHAR(6)`
 
+    // Add password reset columns
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token_expires TIMESTAMP`
+
     // Auto-verify existing approved members so they aren't locked out
     await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
 
