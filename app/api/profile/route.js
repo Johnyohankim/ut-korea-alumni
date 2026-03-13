@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   const { rows } = await sql`
-    SELECT id, email, name, name_ko, graduation_year, major, location, company, title, bio, profile_image_url
+    SELECT id, email, name, name_ko, graduation_year, major, location, company, title, bio, profile_image_url, membership_level
     FROM members WHERE id = ${session.user.id}
   `
 

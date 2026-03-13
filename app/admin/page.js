@@ -48,12 +48,12 @@ export default function AdminPage() {
     if (status === 'authenticated' && session?.user?.isAdmin) fetchAll()
   }, [status, session])
 
-  const handleMemberAction = async (id, action) => {
+  const handleMemberAction = async (id, action, level) => {
     if (action === 'delete' && !confirm('Delete this member?')) return
     await fetch('/api/admin/members', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, action }),
+      body: JSON.stringify({ id, action, level }),
     })
     fetchAll()
   }
@@ -113,6 +113,9 @@ export default function AdminPage() {
   if (!session?.user?.isAdmin) return null
 
   const pendingCount = members.filter(m => !m.is_approved).length
+  const executiveCount = members.filter(m => m.membership_level === 'executive').length
+  const fullCount = members.filter(m => m.membership_level === 'full').length
+  const generalCount = members.filter(m => !m.membership_level || m.membership_level === 'general').length
   const inputClass = "w-full px-3 py-2 rounded-lg border border-charcoal/15 bg-white text-charcoal text-sm focus:outline-none focus:ring-2 focus:ring-burnt-orange/30 focus:border-burnt-orange"
 
   const tabs = [
@@ -146,7 +149,8 @@ export default function AdminPage() {
 
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             <div className="card p-6 text-center">
               <div className="font-display text-3xl font-bold text-burnt-orange">{members.length}</div>
               <div className="text-sm text-charcoal-light mt-1">Total Members</div>
@@ -164,6 +168,21 @@ export default function AdminPage() {
               <div className="text-sm text-charcoal-light mt-1">News Articles</div>
             </div>
           </div>
+          <div className="grid grid-cols-3 gap-5 mt-5">
+            <div className="card p-5 text-center">
+              <div className="font-display text-2xl font-bold text-purple-700">{executiveCount}</div>
+              <div className="text-sm text-charcoal-light mt-1">Executive</div>
+            </div>
+            <div className="card p-5 text-center">
+              <div className="font-display text-2xl font-bold text-blue-700">{fullCount}</div>
+              <div className="text-sm text-charcoal-light mt-1">Full</div>
+            </div>
+            <div className="card p-5 text-center">
+              <div className="font-display text-2xl font-bold text-charcoal-light">{generalCount}</div>
+              <div className="text-sm text-charcoal-light mt-1">General</div>
+            </div>
+          </div>
+          </>
         )}
 
         {/* Members Tab */}
@@ -177,13 +196,29 @@ export default function AdminPage() {
                     {member.name_ko && <span className="text-xs text-charcoal-light">({member.name_ko})</span>}
                     {member.is_admin && <span className="text-[0.6rem] font-bold bg-burnt-orange text-white px-1.5 py-0.5 rounded uppercase">Admin</span>}
                     {!member.is_approved && <span className="text-[0.6rem] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded uppercase">Pending</span>}
+                    <span className={`text-[0.6rem] font-bold px-1.5 py-0.5 rounded uppercase ${
+                      member.membership_level === 'executive' ? 'bg-purple-100 text-purple-800' :
+                      member.membership_level === 'full' ? 'bg-blue-100 text-blue-800' :
+                      'bg-charcoal/10 text-charcoal-light'
+                    }`}>
+                      {member.membership_level || 'general'}
+                    </span>
                   </div>
                   <div className="text-xs text-charcoal-light mt-0.5">
                     {member.email} · {member.graduation_year ? `Class of ${member.graduation_year}` : 'No year'} · {member.major || 'No major'}
                     {member.company && ` · ${member.company}`}
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 flex-wrap">
+                  <select
+                    value={member.membership_level || 'general'}
+                    onChange={(e) => handleMemberAction(member.id, 'set_level', e.target.value)}
+                    className="px-2 py-1.5 text-xs font-semibold rounded-lg border border-charcoal/15 bg-white text-charcoal cursor-pointer focus:outline-none focus:ring-2 focus:ring-burnt-orange/30"
+                  >
+                    <option value="general">General</option>
+                    <option value="full">Full</option>
+                    <option value="executive">Executive</option>
+                  </select>
                   {!member.is_approved ? (
                     <button onClick={() => handleMemberAction(member.id, 'approve')} className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg cursor-pointer border-none hover:bg-green-700">Approve</button>
                   ) : (

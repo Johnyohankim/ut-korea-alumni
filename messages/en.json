@@ -117,6 +117,12 @@
     "title": "About Us",
     "subtitle": "The University of Texas at Austin Korea Alumni Association"
   },
+  "membership": {
+    "level": "Membership",
+    "executive": "Executive",
+    "full": "Full",
+    "general": "General"
+  },
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your account and profile information",

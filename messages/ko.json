@@ -117,6 +117,12 @@
     "title": "소개",
     "subtitle": "텍사스 대학교 오스틴 한국 동문회"
   },
+  "membership": {
+    "level": "회원 등급",
+    "executive": "임원",
+    "full": "정회원",
+    "general": "일반"
+  },
   "profile": {
     "title": "내 프로필",
     "subtitle": "계정 및 프로필 정보를 관리하세요",

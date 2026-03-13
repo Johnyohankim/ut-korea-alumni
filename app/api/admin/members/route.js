@@ -10,7 +10,7 @@ export async function GET() {
 
   const { rows } = await sql`
     SELECT id, email, name, name_ko, graduation_year, major, location, company, title,
-           is_admin, is_approved, created_at, last_login
+           is_admin, is_approved, membership_level, created_at, last_login
     FROM members
     ORDER BY created_at DESC
   `
@@ -24,9 +24,15 @@ export async function PUT(request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { id, action } = await request.json()
+  const { id, action, level } = await request.json()
 
-  if (action === 'approve') {
+  if (action === 'set_level') {
+    const validLevels = ['general', 'full', 'executive']
+    if (!validLevels.includes(level)) {
+      return Response.json({ error: 'Invalid membership level' }, { status: 400 })
+    }
+    await sql`UPDATE members SET membership_level = ${level} WHERE id = ${id}`
+  } else if (action === 'approve') {
     await sql`UPDATE members SET is_approved = true WHERE id = ${id}`
   } else if (action === 'unapprove') {
     await sql`UPDATE members SET is_approved = false WHERE id = ${id}`

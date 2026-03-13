@@ -27,6 +27,7 @@ export async function GET(request) {
         profile_image_url TEXT,
         is_admin BOOLEAN DEFAULT false,
         is_approved BOOLEAN DEFAULT false,
+        membership_level VARCHAR(20) DEFAULT 'general',
         email_verified BOOLEAN DEFAULT false,
         verification_token VARCHAR(255),
         verification_token_expires TIMESTAMP,
@@ -39,6 +40,9 @@ export async function GET(request) {
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false`
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255)`
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP`
+
+    // Add membership level column to existing tables
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS membership_level VARCHAR(20) DEFAULT 'general'`
 
     // Auto-verify existing approved members so they aren't locked out
     await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
