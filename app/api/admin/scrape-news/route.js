@@ -166,13 +166,21 @@ export async function POST() {
 
     let imported = 0
     let skipped = 0
+    let updated = 0
 
     for (const { en, ko } of pairs) {
       const enUrl = en?.link || null
       const koUrl = ko?.link || null
 
-      // Skip if either URL already imported
+      // If article already exists, update it with Korean URL if missing
       if ((enUrl && existingUrls.has(enUrl)) || (koUrl && existingUrls.has(koUrl))) {
+        if (enUrl && koUrl && existingUrls.has(enUrl)) {
+          await sql`
+            UPDATE news SET external_url_ko = ${koUrl}
+            WHERE external_url = ${enUrl} AND (external_url_ko IS NULL OR external_url_ko = '')
+          `
+          updated++
+        }
         skipped++
         continue
       }
@@ -196,6 +204,7 @@ export async function POST() {
     return Response.json({
       success: true,
       imported,
+      updated,
       skipped,
       total: pairs.length,
     })
