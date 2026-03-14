@@ -5,8 +5,10 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useT } from '../components/LanguageProvider'
+import { getProfileCompletion } from '@/lib/profileCompletion'
 
 function MemberCard({ member, t }) {
+  const completion = getProfileCompletion(member)
   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
   const levelStyles = {
@@ -18,13 +20,31 @@ function MemberCard({ member, t }) {
 
   return (
     <Link href={`/members/${member.id}`} className="card p-6 flex items-start gap-4 no-underline group cursor-pointer hover:border-burnt-orange/30 transition-colors">
-      {/* Avatar */}
-      <div className={`shrink-0 w-14 h-14 rounded-full bg-gradient-to-br ${level.avatar} flex items-center justify-center text-white font-display font-bold text-lg overflow-hidden`}>
-        {member.profile_image_url ? (
-          <img src={member.profile_image_url} alt={member.name} className="w-full h-full object-cover" />
-        ) : (
-          initials
-        )}
+      {/* Avatar with completion ring */}
+      <div className="shrink-0 relative">
+        <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${level.avatar} flex items-center justify-center text-white font-display font-bold text-lg overflow-hidden`}>
+          {member.profile_image_url ? (
+            <img src={member.profile_image_url} alt={member.name} className="w-full h-full object-cover" />
+          ) : (
+            initials
+          )}
+        </div>
+        {/* Completion ring */}
+        <svg className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)]" viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" strokeWidth="2" className="text-charcoal/10" />
+          <circle cx="20" cy="20" r="18" fill="none" strokeWidth="2"
+            className={completion >= 70 ? 'text-green-500' : completion >= 40 ? 'text-amber-500' : 'text-red-400'}
+            stroke="currentColor"
+            strokeDasharray={`${completion * 1.131} ${113.1 - completion * 1.131}`}
+            strokeLinecap="round"
+            transform="rotate(-90 20 20)"
+          />
+        </svg>
+        <span className={`absolute -bottom-1 -right-1 text-[0.5rem] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white ${
+          completion >= 70 ? 'bg-green-500 text-white' : completion >= 40 ? 'bg-amber-500 text-white' : 'bg-red-400 text-white'
+        }`}>
+          {completion}
+        </span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

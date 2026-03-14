@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useT } from '../components/LanguageProvider'
+import { getProfileCompletion, getMissingFields } from '@/lib/profileCompletion'
 
 const INTEREST_OPTIONS = [
   'business', 'finance', 'technology', 'art', 'realEstate', 'startup',
@@ -204,6 +205,32 @@ export default function ProfilePage() {
   const inputClass = "w-full px-4 py-2.5 rounded-lg border border-charcoal/15 bg-warm-white text-charcoal focus:outline-none focus:ring-2 focus:ring-burnt-orange/30 focus:border-burnt-orange transition-all text-sm"
   const selectedInterests = form.interests ? form.interests.split(',') : []
 
+  // Profile completion
+  const completionData = {
+    ...form,
+    profileImageUrl: profileImage,
+    nameKo: form.nameKo,
+    graduationYear: form.graduationYear,
+    graduation_year: form.graduationYear,
+    profile_image_url: profileImage,
+  }
+  const completion = getProfileCompletion(completionData)
+  const missing = getMissingFields(completionData)
+
+  const missingLabels = {
+    profilePhoto: t('profile.profilePhoto'),
+    nameKo: t('auth.nameKo'),
+    graduationYear: t('auth.gradYear'),
+    major: t('auth.major'),
+    location: t('auth.location'),
+    company: t('auth.company'),
+    title: t('auth.jobTitle'),
+    phone: t('memberDetail.phone'),
+    bio: t('auth.bio'),
+    anySocial: t('profile.socialLinks'),
+    interests: t('profile.interests'),
+  }
+
   return (
     <div className="min-h-screen px-5 pt-24 pb-16">
       <div className="max-w-2xl mx-auto">
@@ -213,6 +240,27 @@ export default function ProfilePage() {
           <p className="text-charcoal-light mt-2">{t('profile.subtitle')}</p>
           <p className="text-sm text-charcoal-light mt-1">{session?.user?.email}</p>
         </div>
+
+        {/* Profile Completion */}
+        {completion < 100 && (
+          <div className="card p-6 mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-charcoal">{t('profile.completion')}</h3>
+              <span className={`text-sm font-bold ${completion >= 70 ? 'text-green-600' : completion >= 40 ? 'text-amber-600' : 'text-red-500'}`}>{completion}%</span>
+            </div>
+            <div className="w-full h-2.5 bg-charcoal/10 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${completion >= 70 ? 'bg-green-500' : completion >= 40 ? 'bg-amber-500' : 'bg-red-400'}`}
+                style={{ width: `${completion}%` }}
+              />
+            </div>
+            {missing.length > 0 && (
+              <p className="text-xs text-charcoal-light mt-2.5">
+                {t('profile.completionHint')}: {missing.map(k => missingLabels[k]).join(', ')}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Profile Photo */}
         <div className="card p-8 mb-8">

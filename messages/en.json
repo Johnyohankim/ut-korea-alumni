@@ -203,6 +203,8 @@
     "socialLinks": "Social Links",
     "interests": "Interests",
     "interestsHint": "Select your areas of interest for future study groups",
+    "completion": "Profile Completion",
+    "completionHint": "Add to complete your profile",
     "updateProfile": "Update Profile",
     "updatePassword": "Update Password",
     "profileUpdated": "Profile updated successfully",

@@ -203,6 +203,8 @@
     "socialLinks": "소셜 링크",
     "interests": "관심 분야",
     "interestsHint": "스터디 그룹을 위한 관심 분야를 선택하세요",
+    "completion": "프로필 완성도",
+    "completionHint": "프로필을 완성하려면 추가하세요",
     "updateProfile": "프로필 업데이트",
     "updatePassword": "비밀번호 업데이트",
     "profileUpdated": "프로필이 성공적으로 업데이트되었습니다",

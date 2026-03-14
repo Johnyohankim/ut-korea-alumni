@@ -23,7 +23,8 @@ export async function GET(request) {
   if (search || year || location) {
     const searchLike = `%${search}%`
     query = await sql`
-      SELECT id, name, name_ko, graduation_year, major, location, company, title, bio, profile_image_url, membership_level
+      SELECT id, name, name_ko, graduation_year, major, location, company, title, bio, phone,
+             linkedin, instagram, tiktok, youtube, interests, profile_image_url, membership_level
       FROM members
       WHERE is_approved = true
         AND (${!search} OR name ILIKE ${searchLike} OR name_ko ILIKE ${searchLike} OR major ILIKE ${searchLike} OR company ILIKE ${searchLike})
@@ -33,7 +34,8 @@ export async function GET(request) {
     `
   } else {
     query = await sql`
-      SELECT id, name, name_ko, graduation_year, major, location, company, title, bio, profile_image_url, membership_level
+      SELECT id, name, name_ko, graduation_year, major, location, company, title, bio, phone,
+             linkedin, instagram, tiktok, youtube, interests, profile_image_url, membership_level
       FROM members
       WHERE is_approved = true
       ORDER BY graduation_year DESC NULLS LAST, name ASC
