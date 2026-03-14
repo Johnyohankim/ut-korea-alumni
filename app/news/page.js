@@ -109,10 +109,13 @@ export default function NewsPage() {
         ) : (
           <div className="space-y-6">
             {articles.map(article => {
-              const hasExternal = !!article.external_url
+              const externalUrl = locale === 'ko' && article.external_url_ko
+                ? article.external_url_ko
+                : article.external_url
+              const hasExternal = !!externalUrl
               const CardTag = hasExternal ? 'a' : Link
               const cardProps = hasExternal
-                ? { href: article.external_url, target: '_blank', rel: 'noopener noreferrer' }
+                ? { href: externalUrl, target: '_blank', rel: 'noopener noreferrer' }
                 : { href: `/news/${article.id}` }
 
               return (

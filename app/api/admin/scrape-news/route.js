@@ -182,12 +182,13 @@ export async function POST() {
       const content = en ? stripHtml(en.description || '') : (ko ? stripHtml(ko.description || '') : '')
       const contentKo = ko ? stripHtml(ko.description || '') : null
       const externalUrl = enUrl || koUrl
+      const externalUrlKo = koUrl || null
       const pubDate = en ? en.pubDate : ko.pubDate
       const author = en?.['dc:creator'] || ko?.['dc:creator'] || 'SXSK'
 
       await sql`
-        INSERT INTO news (title, title_ko, content, content_ko, external_url, category, approval_status, published, created_at, updated_at)
-        VALUES (${title}, ${titleKo}, ${content}, ${contentKo}, ${externalUrl}, 'news', 'approved', true, ${new Date(pubDate).toISOString()}, NOW())
+        INSERT INTO news (title, title_ko, content, content_ko, external_url, external_url_ko, category, approval_status, published, created_at, updated_at)
+        VALUES (${title}, ${titleKo}, ${content}, ${contentKo}, ${externalUrl}, ${externalUrlKo}, 'news', 'approved', true, ${new Date(pubDate).toISOString()}, NOW())
       `
       imported++
     }

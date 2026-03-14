@@ -71,6 +71,7 @@ export async function GET(request) {
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS subcategory VARCHAR(30)`
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS approval_status VARCHAR(20) DEFAULT 'approved'`
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url TEXT`
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url_ko TEXT`
 
     // Events table
     await sql`

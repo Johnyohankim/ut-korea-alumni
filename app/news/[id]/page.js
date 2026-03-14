@@ -112,9 +112,9 @@ export default function NewsDetailPage({ params }) {
           </div>
 
           {/* External link for news articles */}
-          {article.external_url && (
+          {(article.external_url || article.external_url_ko) && (
             <a
-              href={article.external_url}
+              href={locale === 'ko' && article.external_url_ko ? article.external_url_ko : article.external_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 mt-6 text-burnt-orange font-medium text-sm hover:underline"
