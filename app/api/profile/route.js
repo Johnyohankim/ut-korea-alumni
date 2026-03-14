@@ -9,7 +9,8 @@ export async function GET() {
   }
 
   const { rows } = await sql`
-    SELECT id, email, name, name_ko, graduation_year, major, location, company, title, bio, birthday, phone, profile_image_url, membership_level
+    SELECT id, email, name, name_ko, graduation_year, major, location, company, title, bio, birthday, phone,
+           linkedin, instagram, tiktok, youtube, interests, profile_image_url, membership_level
     FROM members WHERE id = ${session.user.id}
   `
 
@@ -31,6 +32,11 @@ export async function GET() {
     profileImageUrl: user.profile_image_url,
     birthday: user.birthday,
     phone: user.phone,
+    linkedin: user.linkedin,
+    instagram: user.instagram,
+    tiktok: user.tiktok,
+    youtube: user.youtube,
+    interests: user.interests,
   })
 }
 
@@ -41,7 +47,8 @@ export async function PUT(request) {
   }
 
   const body = await request.json()
-  const { name, nameKo, graduationYear, major, location, company, title, bio, birthday, phone } = body
+  const { name, nameKo, graduationYear, major, location, company, title, bio, birthday, phone,
+          linkedin, instagram, tiktok, youtube, interests } = body
 
   if (!name?.trim()) {
     return Response.json({ error: 'Name is required' }, { status: 400 })
@@ -58,7 +65,12 @@ export async function PUT(request) {
       title = ${title?.trim() || null},
       bio = ${bio?.trim() || null},
       birthday = ${birthday?.trim() || null},
-      phone = ${phone?.trim() || null}
+      phone = ${phone?.trim() || null},
+      linkedin = ${linkedin?.trim() || null},
+      instagram = ${instagram?.trim() || null},
+      tiktok = ${tiktok?.trim() || null},
+      youtube = ${youtube?.trim() || null},
+      interests = ${interests?.trim() || null}
     WHERE id = ${session.user.id}
   `
 

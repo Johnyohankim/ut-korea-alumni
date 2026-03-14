@@ -50,6 +50,15 @@ export async function GET(request) {
     // Add phone number column
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`
 
+    // Add social media columns
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS linkedin VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS instagram VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS tiktok VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS youtube VARCHAR(255)`
+
+    // Add interests column (comma-separated)
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS interests TEXT`
+
     // Add password reset columns
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token_expires TIMESTAMP`
