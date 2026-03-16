@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useT, useLanguage } from '../components/LanguageProvider'
 
 const COMMITTEES = [
@@ -143,10 +144,10 @@ export default function AboutPage() {
                               </span>
                               <div className="flex flex-wrap gap-x-4 gap-y-1">
                                 {roleMembers.map(m => (
-                                  <span key={m.id} className="text-sm text-charcoal-light">
+                                  <Link key={m.id} href={`/members/${m.member_id}`} className="text-sm text-charcoal-light hover:text-burnt-orange transition-colors no-underline">
                                     {locale === 'ko' && m.name_ko ? m.name_ko : m.name}
                                     {m.graduation_year ? ` '${String(m.graduation_year).slice(-2)}` : ''}
-                                  </span>
+                                  </Link>
                                 ))}
                               </div>
                             </div>
