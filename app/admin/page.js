@@ -15,6 +15,8 @@ export default function AdminPage() {
   const [articles, setArticles] = useState([])
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [orgPositions, setOrgPositions] = useState([])
+  const [orgSaving, setOrgSaving] = useState(false)
 
   // Event form state
   const [eventForm, setEventForm] = useState({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '' })
@@ -31,22 +33,25 @@ export default function AdminPage() {
 
   const fetchAll = async () => {
     setLoading(true)
-    const [membersRes, eventsRes, newsRes, subsRes] = await Promise.all([
+    const [membersRes, eventsRes, newsRes, subsRes, orgRes] = await Promise.all([
       fetch('/api/admin/members'),
       fetch('/api/events'),
       fetch('/api/admin/news'),
       fetch('/api/admin/submissions'),
+      fetch('/api/admin/org'),
     ])
-    const [membersData, eventsData, newsData, subsData] = await Promise.all([
+    const [membersData, eventsData, newsData, subsData, orgData] = await Promise.all([
       membersRes.json(),
       eventsRes.json(),
       newsRes.json(),
       subsRes.json(),
+      orgRes.json(),
     ])
     setMembers(membersData.members || [])
     setEvents(eventsData.events || [])
     setArticles(newsData.articles || [])
     setSubmissions(subsData.submissions || [])
+    setOrgPositions(orgData.positions || [])
     setLoading(false)
   }
 
@@ -165,6 +170,67 @@ export default function AdminPage() {
     fetchAll()
   }
 
+  // Organization committee definitions
+  const committees = [
+    { key: 'executive', name: 'Executive Committee', nameKo: '집행위원회', slots: [
+      { role: 'chair', label: 'Chair', count: 1 },
+      { role: 'vice_chair', label: 'Vice Chair', count: 2 },
+      { role: 'general_secretary', label: 'General Secretary', count: 1 },
+      { role: 'historian', label: 'Historian', count: 1 },
+    ]},
+    { key: 'membership', name: 'Membership Development Committee', nameKo: '회원개발위원회', slots: [
+      { role: 'chair', label: 'Chair', count: 1 },
+      { role: 'vice_chair', label: 'Vice Chair', count: 5 },
+      { role: 'member', label: 'Committee Member', count: 6 },
+    ]},
+    { key: 'social', name: 'Social Affairs Committee', nameKo: '사회활동위원회', slots: [
+      { role: 'chair', label: 'Chair', count: 1 },
+      { role: 'vice_chair', label: 'Vice Chair', count: 3 },
+      { role: 'member', label: 'Committee Member', count: 5 },
+    ]},
+    { key: 'nominating', name: 'Nominating Committee', nameKo: '인사위원회', slots: [
+      { role: 'chair', label: 'Chair', count: 1 },
+      { role: 'member', label: 'Committee Member', count: 2 },
+    ]},
+    { key: 'finance', name: 'Finance and Planning Committee', nameKo: '재정기획위원회', slots: [
+      { role: 'chair', label: 'Chair (Treasurer)', count: 1 },
+      { role: 'vice_chair', label: 'Vice Chair', count: 2 },
+      { role: 'member', label: 'Committee Member', count: 7 },
+    ]},
+  ]
+
+  // Build org state from fetched positions
+  const getOrgMember = (committee, role, index) => {
+    const matches = orgPositions.filter(p => p.committee === committee && p.role === role)
+    return matches[index]?.member_id?.toString() || ''
+  }
+
+  const handleOrgSave = async (formData) => {
+    setOrgSaving(true)
+    const positions = []
+    let sortOrder = 0
+    for (const committee of committees) {
+      for (const slot of committee.slots) {
+        for (let i = 0; i < slot.count; i++) {
+          const memberId = formData.get(`${committee.key}_${slot.role}_${i}`)
+          positions.push({
+            committee: committee.key,
+            role: slot.role,
+            member_id: memberId || null,
+            sort_order: sortOrder++,
+          })
+        }
+      }
+    }
+    await fetch('/api/admin/org', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positions }),
+    })
+    await fetchAll()
+    setOrgSaving(false)
+  }
+
   if (status === 'loading' || loading) {
     return <div className="min-h-screen flex items-center justify-center pt-20 text-charcoal-light">Loading...</div>
   }
@@ -185,6 +251,7 @@ export default function AdminPage() {
     { id: 'submissions', label: `Submissions ${pendingSubmissions > 0 ? `(${pendingSubmissions})` : ''}` },
     { id: 'events', label: 'Events' },
     { id: 'news', label: 'News' },
+    { id: 'org', label: 'Organization' },
   ]
 
   return (
@@ -513,6 +580,56 @@ export default function AdminPage() {
               ))}
               {articles.length === 0 && <p className="text-charcoal-light text-sm py-8 text-center">No articles yet.</p>}
             </div>
+          </div>
+        )}
+
+        {/* Organization Tab */}
+        {activeTab === 'org' && (
+          <div className="card p-6 md:p-8">
+            <h2 className="font-display text-xl font-semibold text-charcoal mb-6">Organization Chart</h2>
+            <p className="text-sm text-charcoal-light mb-6">Assign members to committee positions. Only approved members are shown.</p>
+            <form onSubmit={(e) => { e.preventDefault(); handleOrgSave(new FormData(e.target)) }}>
+              <div className="space-y-8">
+                {committees.map(committee => (
+                  <div key={committee.key} className="border border-charcoal/10 rounded-xl p-5">
+                    <h3 className="font-display text-lg font-semibold text-charcoal mb-1">{committee.name}</h3>
+                    <p className="text-xs text-charcoal-light mb-4">{committee.nameKo}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {committee.slots.flatMap(slot =>
+                        Array.from({ length: slot.count }, (_, i) => (
+                          <div key={`${slot.role}_${i}`}>
+                            <label className="block text-xs font-medium text-charcoal-light mb-1">
+                              {slot.label}{slot.count > 1 ? ` ${i + 1}` : ''}
+                            </label>
+                            <select
+                              name={`${committee.key}_${slot.role}_${i}`}
+                              defaultValue={getOrgMember(committee.key, slot.role, i)}
+                              className={inputClass}
+                            >
+                              <option value="">— Empty —</option>
+                              {members.filter(m => m.is_approved).map(m => (
+                                <option key={m.id} value={m.id}>
+                                  {m.name}{m.name_ko ? ` (${m.name_ko})` : ''} — {m.graduation_year || '?'}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6">
+                <button
+                  type="submit"
+                  disabled={orgSaving}
+                  className="btn-primary !py-2.5 !px-6 cursor-pointer"
+                >
+                  {orgSaving ? 'Saving...' : 'Save Organization Chart'}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </div>

@@ -121,6 +121,17 @@ export async function GET(request) {
       )
     `
 
+    // Organization positions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS org_positions (
+        id SERIAL PRIMARY KEY,
+        committee VARCHAR(100) NOT NULL,
+        role VARCHAR(50) NOT NULL,
+        member_id INTEGER REFERENCES members(id) ON DELETE SET NULL,
+        sort_order INTEGER DEFAULT 0
+      )
+    `
+
     return Response.json({ success: true, message: 'All tables created successfully' })
   } catch (error) {
     console.error('DB init error:', error)

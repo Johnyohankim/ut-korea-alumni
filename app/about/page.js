@@ -1,10 +1,61 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useT, useLanguage } from '../components/LanguageProvider'
+
+const COMMITTEES = [
+  { key: 'executive', en: 'Executive Committee', ko: '집행위원회',
+    descEn: null, descKo: null,
+    roles: [
+      { role: 'chair', en: 'Chair', ko: '위원장' },
+      { role: 'vice_chair', en: 'Vice Chair', ko: '부위원장' },
+      { role: 'general_secretary', en: 'General Secretary', ko: '총무' },
+      { role: 'historian', en: 'Historian', ko: '역사기록관' },
+    ]},
+  { key: 'membership', en: 'Membership Development Committee', ko: '회원개발위원회',
+    descEn: 'Focuses on increasing alumni engagement and membership, developing programs and benefits to attract and retain members.',
+    descKo: '동문 참여 및 회원 확대에 주력하며, 회원 유치와 유지를 위한 프로그램과 혜택을 개발합니다.',
+    roles: [
+      { role: 'chair', en: 'Chair (Vice President)', ko: '위원장 (부회장)' },
+      { role: 'vice_chair', en: 'Vice Chair', ko: '부위원장' },
+      { role: 'member', en: 'Committee Member', ko: '위원' },
+    ]},
+  { key: 'social', en: 'Social Affairs Committee', ko: '사회활동위원회',
+    descEn: 'Oversees all social activities and community events.',
+    descKo: '모든 사교 활동과 커뮤니티 행사를 총괄합니다.',
+    roles: [
+      { role: 'chair', en: 'Chair (Vice President)', ko: '위원장 (부회장)' },
+      { role: 'vice_chair', en: 'Vice Chair', ko: '부위원장' },
+      { role: 'member', en: 'Committee Member', ko: '위원' },
+    ]},
+  { key: 'nominating', en: 'Nominating Committee', ko: '인사위원회',
+    descEn: 'Identifies and recruits candidates for board positions, ensuring a diverse and skilled leadership team.',
+    descKo: '이사회 후보자를 발굴하고 모집하여 다양하고 유능한 리더십 팀을 구성합니다.',
+    roles: [
+      { role: 'chair', en: 'Chair', ko: '위원장' },
+      { role: 'member', en: 'Committee Member', ko: '위원' },
+    ]},
+  { key: 'finance', en: 'Finance and Planning Committee', ko: '재정기획위원회',
+    descEn: 'Responsible for overseeing the association\'s financial health, managing budgets, investments, and financial planning.',
+    descKo: '동문회의 재정 건전성을 감독하고 예산, 투자 및 재정 계획을 관리합니다.',
+    roles: [
+      { role: 'chair', en: 'Chair (Treasurer)', ko: '위원장 (재무)' },
+      { role: 'vice_chair', en: 'Vice Chair', ko: '부위원장' },
+      { role: 'member', en: 'Committee Member', ko: '위원' },
+    ]},
+]
 
 export default function AboutPage() {
   const t = useT()
   const { locale } = useLanguage()
+  const [positions, setPositions] = useState([])
+
+  useEffect(() => {
+    fetch('/api/org').then(r => r.json()).then(d => setPositions(d.positions || []))
+  }, [])
+
+  const getMembers = (committeeKey, role) =>
+    positions.filter(p => p.committee === committeeKey && p.role === role && p.member_id)
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-5 md:px-8">
@@ -58,6 +109,54 @@ export default function AboutPage() {
                 and homecoming celebrations. We also run mentoring programs for Korean students
                 preparing to attend UT Austin.
               </p>
+            </div>
+          )}
+
+          {/* Organization Chart */}
+          {positions.length > 0 && (
+            <div className="mt-10 pt-8 border-t border-charcoal/10">
+              <h3 className="font-display text-xl font-semibold text-charcoal mb-6">
+                {locale === 'ko' ? '조직도' : 'Organization Chart'}
+              </h3>
+              <div className="space-y-6">
+                {COMMITTEES.map(committee => {
+                  const hasAny = committee.roles.some(r => getMembers(committee.key, r.role).length > 0)
+                  if (!hasAny) return null
+                  return (
+                    <div key={committee.key} className="border border-charcoal/10 rounded-xl p-5">
+                      <h4 className="font-display text-base font-semibold text-burnt-orange mb-1">
+                        {locale === 'ko' ? committee.ko : committee.en}
+                      </h4>
+                      {(locale === 'ko' ? committee.descKo : committee.descEn) && (
+                        <p className="text-xs text-charcoal-light mb-3">
+                          {locale === 'ko' ? committee.descKo : committee.descEn}
+                        </p>
+                      )}
+                      <div className="space-y-2">
+                        {committee.roles.map(roleInfo => {
+                          const roleMembers = getMembers(committee.key, roleInfo.role)
+                          if (roleMembers.length === 0) return null
+                          return (
+                            <div key={roleInfo.role} className="flex flex-wrap gap-x-6 gap-y-1">
+                              <span className="text-xs font-semibold text-charcoal min-w-[140px]">
+                                {locale === 'ko' ? roleInfo.ko : roleInfo.en}
+                              </span>
+                              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                {roleMembers.map(m => (
+                                  <span key={m.id} className="text-sm text-charcoal-light">
+                                    {locale === 'ko' && m.name_ko ? m.name_ko : m.name}
+                                    {m.graduation_year ? ` '${String(m.graduation_year).slice(-2)}` : ''}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>
