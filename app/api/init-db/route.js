@@ -36,44 +36,6 @@ export async function GET(request) {
       )
     `
 
-    // Add email verification columns to existing tables
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255)`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP`
-
-    // Add membership level column to existing tables
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS membership_level VARCHAR(20) DEFAULT 'general'`
-
-    // Add birthday column (MMDD format for annual matching)
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS birthday VARCHAR(6)`
-
-    // Add phone number column
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`
-
-    // Add social media columns
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS linkedin VARCHAR(255)`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS instagram VARCHAR(255)`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS tiktok VARCHAR(255)`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS youtube VARCHAR(255)`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS twitter VARCHAR(255)`
-
-    // Add interests column (comma-separated)
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS interests TEXT`
-
-    // Add password reset columns
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`
-    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token_expires TIMESTAMP`
-
-    // Auto-verify existing approved members so they aren't locked out
-    await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
-
-    // Add news category and approval columns
-    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS category VARCHAR(20) DEFAULT 'news'`
-    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS subcategory VARCHAR(30)`
-    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS approval_status VARCHAR(20) DEFAULT 'approved'`
-    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url TEXT`
-    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url_ko TEXT`
-
     // Events table
     await sql`
       CREATE TABLE IF NOT EXISTS events (
@@ -131,6 +93,32 @@ export async function GET(request) {
         sort_order INTEGER DEFAULT 0
       )
     `
+
+    // Add columns to members (idempotent)
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS membership_level VARCHAR(20) DEFAULT 'general'`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS birthday VARCHAR(6)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS linkedin VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS instagram VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS tiktok VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS youtube VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS twitter VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS interests TEXT`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`
+    await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS password_reset_token_expires TIMESTAMP`
+
+    // Auto-verify existing approved members
+    await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
+
+    // Add columns to news (idempotent)
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS category VARCHAR(20) DEFAULT 'news'`
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS subcategory VARCHAR(30)`
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS approval_status VARCHAR(20) DEFAULT 'approved'`
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url TEXT`
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url_ko TEXT`
 
     return Response.json({ success: true, message: 'All tables created successfully' })
   } catch (error) {
