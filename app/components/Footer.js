@@ -36,7 +36,8 @@ export default function Footer() {
               <li><Link href="/events" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.events')}</Link></li>
               <li><Link href="/news" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.news')}</Link></li>
               <li><Link href="/members" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.members')}</Link></li>
-              <li><Link href="/about" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.about')}</Link></li>
+              <li><Link href="/dues" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.dues')}</Link></li>
+              <li><Link href="/about#organization" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.about')}</Link></li>
             </ul>
           </div>
 

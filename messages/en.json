@@ -12,7 +12,9 @@
     "profile": "My Profile",
     "submit": "Submit Post",
     "myPosts": "My Posts",
-    "dues": "Dues"
+    "dues": "Dues",
+    "organization": "Organization",
+    "contact": "Contact"
   },
   "hero": {
     "badge": "UT Austin Korea Alumni",

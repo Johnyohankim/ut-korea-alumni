@@ -19,7 +19,7 @@ export default function AboutPage() {
           <p className="section-subheading mx-auto text-center">{t('about.subtitle')}</p>
         </div>
 
-        <div className="card p-8 md:p-10">
+        <div id="organization" className="card p-8 md:p-10 scroll-mt-24">
           {locale === 'ko' ? (
             <div className="space-y-6 text-charcoal leading-relaxed">
               <p>
@@ -63,6 +63,31 @@ export default function AboutPage() {
               </p>
             </div>
           )}
+        </div>
+
+        {/* Contact section */}
+        <div id="contact" className="card p-8 md:p-10 mt-8 scroll-mt-24">
+          <h2 className="font-display text-2xl font-semibold text-charcoal mb-6">
+            {locale === 'ko' ? '연락처' : 'Contact'}
+          </h2>
+          <div className="space-y-4 text-charcoal-light">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-burnt-orange flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+              <a href="mailto:utaustinkorea@gmail.com" className="text-burnt-orange hover:underline">
+                utaustinkorea@gmail.com
+              </a>
+            </div>
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-burnt-orange flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 003 12c0-1.605.42-3.113 1.157-4.418" />
+              </svg>
+              <a href="https://www.utexas.edu" target="_blank" rel="noopener noreferrer" className="text-burnt-orange hover:underline">
+                www.utexas.edu
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

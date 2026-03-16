@@ -1,10 +1,55 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useLanguage, useT } from './LanguageProvider'
+
+function DropdownMenu({ label, items, isActive, textColor }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 border-none cursor-pointer bg-transparent ${
+          isActive
+            ? 'bg-burnt-orange/10 text-burnt-orange'
+            : `${textColor} hover:bg-burnt-orange/5 hover:text-burnt-orange`
+        }`}
+      >
+        {label}
+        <svg className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-charcoal/10 py-1 min-w-[160px] z-50">
+          {items.map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-charcoal hover:bg-burnt-orange/5 hover:text-burnt-orange transition-colors no-underline"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -13,6 +58,7 @@ export default function Navbar() {
   const t = useT()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileExpanded, setMobileExpanded] = useState(null)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -22,6 +68,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setMobileOpen(false)
+    setMobileExpanded(null)
   }, [pathname])
 
   const isHome = pathname === '/'
@@ -34,21 +81,44 @@ export default function Navbar() {
   const membershipLevel = session?.user?.membershipLevel
   const canWrite = ['executive', 'full'].includes(membershipLevel) || session?.user?.isAdmin
 
-  const navLinks = [
-    { href: '/', label: t('nav.home') },
-    { href: '/events', label: t('nav.events') },
-    { href: '/news', label: t('nav.news') },
-    { href: '/members', label: t('nav.members'), auth: true },
-    { href: '/dues', label: t('nav.dues') },
-    { href: '/about', label: t('nav.about') },
-    ...(canWrite ? [{ href: '/submit', label: t('nav.submit') }] : []),
-    ...(session?.user?.isAdmin ? [{ href: '/admin', label: t('nav.admin') }] : []),
-  ].filter(link => !link.auth || session)
-
   const isActive = (href) => {
     if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
   }
+
+  // Build nav structure with dropdowns
+  const navItems = [
+    { href: '/events', label: t('nav.events') },
+    {
+      label: t('nav.news'),
+      isActive: isActive('/news') || isActive('/submit') || isActive('/my-posts'),
+      children: [
+        { href: '/news', label: t('nav.news') },
+        ...(canWrite ? [
+          { href: '/submit', label: t('nav.submit') },
+          { href: '/my-posts', label: t('nav.myPosts') },
+        ] : []),
+      ],
+    },
+    {
+      label: t('nav.members'),
+      auth: true,
+      isActive: isActive('/members') || isActive('/dues'),
+      children: [
+        { href: '/members', label: t('nav.members') },
+        { href: '/dues', label: t('nav.dues') },
+      ],
+    },
+    {
+      label: t('nav.about'),
+      isActive: isActive('/about'),
+      children: [
+        { href: '/about#organization', label: t('nav.organization') },
+        { href: '/about#contact', label: t('nav.contact') },
+      ],
+    },
+    ...(session?.user?.isAdmin ? [{ href: '/admin', label: t('nav.admin') }] : []),
+  ].filter(item => !item.auth || session)
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBg}`}>
@@ -56,7 +126,6 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className={`flex items-center gap-2.5 ${logoColor} transition-colors no-underline`}>
-            {/* Longhorn silhouette */}
             <svg viewBox="0 0 40 28" className="w-10 h-7 fill-current">
               <path d="M20 12C20 12 16 4 8 2C6 1.5 3 1.5 1 3C0.5 3.3 0 4 0.5 4.5C1 5 2 4.8 3 4.5C5 3.8 7 4 8 5C10 7 12 10 14 12C15 13 17 15 20 15C23 15 25 13 26 12C28 10 30 7 32 5C33 4 35 3.8 37 4.5C38 4.8 39 5 39.5 4.5C40 4 39.5 3.3 39 3C37 1.5 34 1.5 32 2C24 4 20 12 20 12Z"/>
               <path d="M20 15C17 15 15 17 14 19C13 21 13 24 15 26C16 27 18 28 20 28C22 28 24 27 25 26C27 24 27 21 26 19C25 17 23 15 20 15ZM20 25C18.5 25 17.5 23.5 18 22C18.3 21 19 20 20 20C21 20 21.7 21 22 22C22.5 23.5 21.5 25 20 25Z"/>
@@ -67,21 +136,31 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop nav links */}
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 no-underline ${
-                  isActive(link.href)
-                    ? 'bg-burnt-orange/10 text-burnt-orange'
-                    : `${textColor} hover:bg-burnt-orange/5 hover:text-burnt-orange`
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navItems.map((item, i) =>
+              item.children ? (
+                <DropdownMenu
+                  key={i}
+                  label={item.label}
+                  items={item.children}
+                  isActive={item.isActive}
+                  textColor={textColor}
+                />
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 no-underline ${
+                    isActive(item.href)
+                      ? 'bg-burnt-orange/10 text-burnt-orange'
+                      : `${textColor} hover:bg-burnt-orange/5 hover:text-burnt-orange`
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
           </div>
 
           {/* Right side: language toggle + auth */}
@@ -98,18 +177,6 @@ export default function Navbar() {
             </button>
             {session ? (
               <div className="flex items-center gap-1">
-                {canWrite && (
-                  <Link
-                    href="/my-posts"
-                    className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 no-underline ${
-                      isActive('/my-posts')
-                        ? 'bg-burnt-orange/10 text-burnt-orange'
-                        : `${textColor} hover:bg-burnt-orange/5 hover:text-burnt-orange`
-                    }`}
-                  >
-                    {t('nav.myPosts')}
-                  </Link>
-                )}
                 <Link
                   href="/profile"
                   className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 no-underline ${
@@ -155,32 +222,51 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-charcoal/10 shadow-lg">
           <div className="px-5 py-4 space-y-1">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`block px-4 py-2.5 rounded-lg text-sm font-medium no-underline ${
-                  isActive(link.href)
-                    ? 'bg-burnt-orange/10 text-burnt-orange'
-                    : 'text-charcoal hover:bg-cream-light'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <hr className="border-charcoal/10 my-3" />
-            {session && canWrite && (
-              <Link
-                href="/my-posts"
-                className={`block px-4 py-2.5 rounded-lg text-sm font-medium no-underline ${
-                  isActive('/my-posts')
-                    ? 'bg-burnt-orange/10 text-burnt-orange'
-                    : 'text-charcoal hover:bg-cream-light'
-                }`}
-              >
-                {t('nav.myPosts')}
-              </Link>
+            {navItems.map((item, i) =>
+              item.children ? (
+                <div key={i}>
+                  <button
+                    onClick={() => setMobileExpanded(mobileExpanded === i ? null : i)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium text-charcoal hover:bg-cream-light bg-transparent border-none cursor-pointer"
+                  >
+                    <span className={item.isActive ? 'text-burnt-orange' : ''}>{item.label}</span>
+                    <svg className={`w-4 h-4 transition-transform ${mobileExpanded === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {mobileExpanded === i && (
+                    <div className="ml-4 space-y-0.5">
+                      {item.children.map(child => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={`block px-4 py-2 rounded-lg text-sm no-underline ${
+                            isActive(child.href)
+                              ? 'bg-burnt-orange/10 text-burnt-orange'
+                              : 'text-charcoal-light hover:bg-cream-light'
+                          }`}
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`block px-4 py-2.5 rounded-lg text-sm font-medium no-underline ${
+                    isActive(item.href)
+                      ? 'bg-burnt-orange/10 text-burnt-orange'
+                      : 'text-charcoal hover:bg-cream-light'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
             )}
+            <hr className="border-charcoal/10 my-3" />
             {session && (
               <Link
                 href="/profile"
