@@ -149,11 +149,18 @@ export default function AdminPage() {
     fetchAll()
   }
 
+  const toKSTLocal = (dateStr) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
+    return kst.toISOString().slice(0, 16)
+  }
+
   const handleEditEvent = (event) => {
     setEditingEvent(event.id)
     setEventForm({
       title: event.title, titleKo: event.title_ko || '', description: event.description || '', descriptionKo: event.description_ko || '',
-      eventDate: event.event_date?.slice(0, 16) || '', location: event.location || '', locationKo: event.location_ko || '', maxAttendees: event.max_attendees || '',
+      eventDate: toKSTLocal(event.event_date), location: event.location || '', locationKo: event.location_ko || '', maxAttendees: event.max_attendees || '',
       externalUrl: event.external_url || '', imageUrl: event.image_url || '',
       timeTba: event.time_tba || false, locationTba: event.location_tba || false,
     })
