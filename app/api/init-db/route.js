@@ -134,6 +134,7 @@ export async function GET(request) {
 
     // Add columns to events (idempotent)
     await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS external_url TEXT`
+    await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url TEXT`
 
     // Add columns to news (idempotent)
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS category VARCHAR(20) DEFAULT 'news'`
