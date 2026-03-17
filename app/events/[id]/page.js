@@ -67,6 +67,11 @@ export default function EventDetailPage({ params }) {
         </Link>
 
         <div className="card overflow-hidden">
+          {/* Event image */}
+          {event.image_url && (
+            <img src={event.image_url} alt={event.title} className="w-full h-64 md:h-80 object-cover" />
+          )}
+
           {/* Date header */}
           <div className="bg-gradient-to-r from-burnt-orange to-burnt-dark p-6 md:p-8 text-white">
             <div className="text-sm font-semibold opacity-80 uppercase tracking-wider mb-1">
@@ -105,6 +110,16 @@ export default function EventDetailPage({ params }) {
                 <p className="text-charcoal leading-relaxed whitespace-pre-wrap">
                   {locale === 'ko' && event.description_ko ? event.description_ko : event.description}
                 </p>
+              </div>
+            )}
+
+            {/* External link */}
+            {event.external_url && (
+              <div className="mb-8">
+                <a href={event.external_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-burnt-orange hover:text-burnt-dark font-semibold text-sm no-underline transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  {locale === 'ko' ? '관련 링크 보기' : 'View Link'}
+                </a>
               </div>
             )}
 

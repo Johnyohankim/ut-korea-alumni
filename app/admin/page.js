@@ -21,8 +21,9 @@ export default function AdminPage() {
   const [settingsSaving, setSettingsSaving] = useState(false)
 
   // Event form state
-  const [eventForm, setEventForm] = useState({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '' })
+  const [eventForm, setEventForm] = useState({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', imageUrl: '' })
   const [editingEvent, setEditingEvent] = useState(null)
+  const [uploadingEventImage, setUploadingEventImage] = useState(false)
 
   // News form state
   const [newsForm, setNewsForm] = useState({ title: '', titleKo: '', content: '', contentKo: '', published: false, category: 'news', externalUrl: '' })
@@ -81,7 +82,7 @@ export default function AdminPage() {
     const url = editingEvent ? `/api/events/${editingEvent}` : '/api/events'
     const method = editingEvent ? 'PUT' : 'POST'
     await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventForm) })
-    setEventForm({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '' })
+    setEventForm({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', imageUrl: '' })
     setEditingEvent(null)
     fetchAll()
   }
@@ -91,7 +92,24 @@ export default function AdminPage() {
     setEventForm({
       title: event.title, titleKo: event.title_ko || '', description: event.description || '', descriptionKo: event.description_ko || '',
       eventDate: event.event_date?.slice(0, 16) || '', location: event.location || '', locationKo: event.location_ko || '', maxAttendees: event.max_attendees || '',
+      externalUrl: event.external_url || '', imageUrl: event.image_url || '',
     })
+  }
+
+  const handleEventImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingEventImage(true)
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      const res = await fetch('/api/events/image', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (res.ok) {
+        setEventForm(p => ({ ...p, imageUrl: data.url }))
+      }
+    } catch {}
+    setUploadingEventImage(false)
   }
 
   const handleDeleteEvent = async (id) => {
@@ -469,6 +487,23 @@ export default function AdminPage() {
               <div>
                 <label className="block text-xs font-medium text-charcoal mb-1">Description (KO)</label>
                 <textarea value={eventForm.descriptionKo} onChange={e => setEventForm(p => ({ ...p, descriptionKo: e.target.value }))} rows={3} className={inputClass + ' resize-none'} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-charcoal mb-1">Link (Optional)</label>
+                <input type="url" value={eventForm.externalUrl} onChange={e => setEventForm(p => ({ ...p, externalUrl: e.target.value }))} className={inputClass} placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-charcoal mb-1">Event Image</label>
+                <div className="flex items-center gap-3">
+                  <input type="file" accept="image/*" onChange={handleEventImageUpload} disabled={uploadingEventImage} className="text-sm text-charcoal-light file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-burnt-orange/10 file:text-burnt-orange hover:file:bg-burnt-orange/20 file:cursor-pointer" />
+                  {uploadingEventImage && <span className="text-xs text-charcoal-light">Uploading...</span>}
+                </div>
+                {eventForm.imageUrl && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={eventForm.imageUrl} alt="Preview" className="w-20 h-14 object-cover rounded" />
+                    <button type="button" onClick={() => setEventForm(p => ({ ...p, imageUrl: '' }))} className="text-xs text-red-600 hover:text-red-700 cursor-pointer bg-transparent border-none">Remove</button>
+                  </div>
+                )}
               </div>
               <div className="flex gap-3">
                 <button type="submit" className="btn-primary text-sm">{editingEvent ? 'Update' : 'Create'} Event</button>

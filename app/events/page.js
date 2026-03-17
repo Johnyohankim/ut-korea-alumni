@@ -57,11 +57,20 @@ export default function EventsPage() {
               <div className="space-y-5 mb-16">
                 {upcoming.map(event => (
                   <Link key={event.id} href={`/events/${event.id}`} className="card overflow-hidden flex flex-col md:flex-row no-underline group">
-                    {/* Date block */}
-                    <div className="shrink-0 w-full md:w-28 bg-gradient-to-br from-burnt-orange to-burnt-dark p-5 md:p-6 flex md:flex-col items-center md:items-center justify-center gap-2 text-white">
-                      <div className="text-xs font-bold tracking-wider uppercase opacity-80">{getMonth(event.event_date)}</div>
-                      <div className="font-display text-3xl md:text-4xl font-bold">{getDay(event.event_date)}</div>
-                    </div>
+                    {/* Image or Date block */}
+                    {event.image_url ? (
+                      <div className="shrink-0 w-full md:w-48 h-40 md:h-auto relative">
+                        <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 bg-burnt-orange text-white text-xs font-bold px-2 py-1 rounded">
+                          {getMonth(event.event_date)} {getDay(event.event_date)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="shrink-0 w-full md:w-28 bg-gradient-to-br from-burnt-orange to-burnt-dark p-5 md:p-6 flex md:flex-col items-center md:items-center justify-center gap-2 text-white">
+                        <div className="text-xs font-bold tracking-wider uppercase opacity-80">{getMonth(event.event_date)}</div>
+                        <div className="font-display text-3xl md:text-4xl font-bold">{getDay(event.event_date)}</div>
+                      </div>
+                    )}
                     <div className="flex-1 p-5 md:p-6">
                       <h3 className="font-display text-xl font-semibold text-charcoal group-hover:text-burnt-orange transition-colors">
                         {locale === 'ko' && event.title_ko ? event.title_ko : event.title}

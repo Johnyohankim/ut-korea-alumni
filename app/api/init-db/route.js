@@ -132,6 +132,9 @@ export async function GET(request) {
     // Auto-verify existing approved members
     await sql`UPDATE members SET email_verified = true WHERE is_approved = true AND email_verified = false`
 
+    // Add columns to events (idempotent)
+    await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS external_url TEXT`
+
     // Add columns to news (idempotent)
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS category VARCHAR(20) DEFAULT 'news'`
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS subcategory VARCHAR(30)`

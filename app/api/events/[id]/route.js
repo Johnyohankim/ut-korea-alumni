@@ -49,7 +49,7 @@ export async function PUT(request, { params }) {
   }
 
   const body = await request.json()
-  const { title, titleKo, description, descriptionKo, eventDate, endDate, location, locationKo, imageUrl, maxAttendees } = body
+  const { title, titleKo, description, descriptionKo, eventDate, endDate, location, locationKo, imageUrl, maxAttendees, externalUrl } = body
 
   await sql`
     UPDATE events SET
@@ -57,7 +57,8 @@ export async function PUT(request, { params }) {
       description = ${description || null}, description_ko = ${descriptionKo || null},
       event_date = ${eventDate}, end_date = ${endDate || null},
       location = ${location || null}, location_ko = ${locationKo || null},
-      image_url = ${imageUrl || null}, max_attendees = ${maxAttendees ? parseInt(maxAttendees) : null}
+      image_url = ${imageUrl || null}, max_attendees = ${maxAttendees ? parseInt(maxAttendees) : null},
+      external_url = ${externalUrl || null}
     WHERE id = ${parseInt(id)}
   `
 

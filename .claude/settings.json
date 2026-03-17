@@ -14,7 +14,9 @@
       "Bash(python3 -c \"from datetime import datetime, timezone, timedelta; kst=datetime.now\\(timezone.utc\\)+timedelta\\(hours=9\\); print\\(f''KST now: {kst}, MMDD: {kst.strftime\\(\"\"%m%d\"\"\\)}''\\)\")",
       "Bash(find c:Usersletmeut-korea-alumni/app -type f -name *.js -o -name *.jsx)",
       "Bash(mkdir -p c:/Users/letme/ut-korea-alumni/app/api/members/[id])",
-      "Bash(mkdir -p c:/Users/letme/ut-korea-alumni/app/members/[id])"
+      "Bash(mkdir -p c:/Users/letme/ut-korea-alumni/app/members/[id])",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\letme\\ut-korea-alumni\\app\\api\\admin\\submissions"
