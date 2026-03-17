@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useT } from './components/LanguageProvider'
+import { useT, useLanguage } from './components/LanguageProvider'
 
 export default function Home() {
   const t = useT()
+  const { locale } = useLanguage()
   const [stats, setStats] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+' })
   const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [latestNews, setLatestNews] = useState([])
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(d => {
@@ -23,6 +25,9 @@ export default function Home() {
       const now = new Date()
       const upcoming = (d.events || []).filter(e => new Date(e.event_date) >= now).sort((a, b) => new Date(a.event_date) - new Date(b.event_date)).slice(0, 3)
       setUpcomingEvents(upcoming)
+    }).catch(() => {})
+    fetch('/api/news').then(r => r.json()).then(d => {
+      setLatestNews((d.articles || []).slice(0, 3))
     }).catch(() => {})
   }, [])
 
@@ -172,44 +177,33 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Placeholder news cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              date: 'Mar 5, 2026',
-              title: 'Alumni Scholarship Program Launches',
-              titleKo: '동문 장학금 프로그램 출범',
-              excerpt: 'Supporting the next generation of Korean students at UT Austin with our new scholarship initiative.',
-            },
-            {
-              date: 'Feb 28, 2026',
-              title: '2026 Annual General Meeting Recap',
-              titleKo: '2026 정기총회 요약',
-              excerpt: 'Key highlights from our annual meeting including new board elections and community initiatives.',
-            },
-            {
-              date: 'Feb 15, 2026',
-              title: 'UT Austin Ranks Top 30 Globally',
-              titleKo: 'UT Austin 세계 30위 이내 진입',
-              excerpt: 'The university continues its upward trajectory in global rankings, a proud moment for all Longhorns.',
-            },
-          ].map((article, i) => (
-            <article key={i} className="card overflow-hidden group cursor-pointer">
-              {/* Placeholder image area */}
-              <div className="h-44 bg-gradient-to-br from-cream to-cream-light relative overflow-hidden">
-                <div className="absolute inset-0 diagonal-accent" />
-                <div className="absolute bottom-3 left-4">
-                  <span className="text-[0.65rem] font-semibold bg-white/90 text-charcoal-light px-2.5 py-1 rounded-full">{article.date}</span>
-                </div>
-              </div>
-              <div className="p-5">
-                <h3 className="font-display text-base font-semibold text-charcoal group-hover:text-burnt-orange transition-colors leading-snug">{article.title}</h3>
-                <p className="text-sm text-charcoal-light mt-0.5 mb-2">{article.titleKo}</p>
-                <p className="text-sm text-charcoal-light/80 leading-relaxed line-clamp-2">{article.excerpt}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        {latestNews.length === 0 ? (
+          <div className="card p-12 text-center text-charcoal-light">{t('news.noNews')}</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {latestNews.map(article => {
+              const dateStr = new Date(article.created_at).toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Seoul' })
+              const title = locale === 'ko' && article.title_ko ? article.title_ko : article.title
+              const subtitle = locale === 'ko' && article.title_ko ? article.title : article.title_ko
+              const content = locale === 'ko' && article.content_ko ? article.content_ko : article.content
+              return (
+                <Link key={article.id} href={`/news/${article.id}`} className="card overflow-hidden group cursor-pointer no-underline">
+                  <div className="h-44 bg-gradient-to-br from-cream to-cream-light relative overflow-hidden">
+                    <div className="absolute inset-0 diagonal-accent" />
+                    <div className="absolute bottom-3 left-4">
+                      <span className="text-[0.65rem] font-semibold bg-white/90 text-charcoal-light px-2.5 py-1 rounded-full">{dateStr}</span>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-display text-base font-semibold text-charcoal group-hover:text-burnt-orange transition-colors leading-snug">{title}</h3>
+                    {subtitle && <p className="text-sm text-charcoal-light mt-0.5 mb-2">{subtitle}</p>}
+                    {content && <p className="text-sm text-charcoal-light/80 leading-relaxed line-clamp-2">{content}</p>}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* CTA Section */}
