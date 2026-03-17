@@ -7,6 +7,7 @@ import { useT } from './components/LanguageProvider'
 export default function Home() {
   const t = useT()
   const [stats, setStats] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+' })
+  const [upcomingEvents, setUpcomingEvents] = useState([])
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(d => {
@@ -17,6 +18,11 @@ export default function Home() {
           stat_years: d.settings.stat_years || prev.stat_years,
         }))
       }
+    }).catch(() => {})
+    fetch('/api/events').then(r => r.json()).then(d => {
+      const now = new Date()
+      const upcoming = (d.events || []).filter(e => new Date(e.event_date) >= now).slice(0, 3)
+      setUpcomingEvents(upcoming)
     }).catch(() => {})
   }, [])
 
@@ -111,37 +117,40 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Placeholder event cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { month: 'APR', day: '12', title: 'Spring Networking Dinner', titleKo: '봄 네트워킹 디너', location: 'Gangnam, Seoul', category: 'Networking' },
-            { month: 'MAY', day: '03', title: 'Career Talk: Tech in Korea', titleKo: '커리어 토크: 한국의 테크', location: 'Yeouido, Seoul', category: 'Career' },
-            { month: 'JUN', day: '21', title: 'Summer BBQ Gathering', titleKo: '여름 바베큐 모임', location: 'Hangang Park, Seoul', category: 'Social' },
-          ].map((event, i) => (
-            <div key={i} className="card overflow-hidden group cursor-pointer">
-              {/* Date accent bar */}
-              <div className="h-1.5 bg-gradient-to-r from-burnt-orange to-gold" />
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  {/* Date block */}
-                  <div className="shrink-0 w-14 text-center">
-                    <div className="text-xs font-bold text-burnt-orange tracking-wider uppercase">{event.month}</div>
-                    <div className="font-display text-2xl font-bold text-charcoal">{event.day}</div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[0.7rem] font-semibold text-burnt-orange/80 uppercase tracking-wider">{event.category}</span>
-                    <h3 className="font-display text-lg font-semibold text-charcoal mt-0.5 group-hover:text-burnt-orange transition-colors">{event.title}</h3>
-                    <p className="text-sm text-charcoal-light mt-0.5">{event.titleKo}</p>
-                    <div className="flex items-center gap-1.5 mt-3 text-xs text-charcoal-light">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                      {event.location}
+        {upcomingEvents.length === 0 ? (
+          <div className="card p-12 text-center text-charcoal-light">{t('events.noEvents')}</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {upcomingEvents.map(event => {
+              const d = new Date(event.event_date)
+              const month = d.toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Seoul' }).toUpperCase()
+              const day = d.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'Asia/Seoul' })
+              return (
+                <Link key={event.id} href={`/events/${event.id}`} className="card overflow-hidden group cursor-pointer no-underline">
+                  <div className="h-1.5 bg-gradient-to-r from-burnt-orange to-gold" />
+                  <div className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="shrink-0 w-14 text-center">
+                        <div className="text-xs font-bold text-burnt-orange tracking-wider uppercase">{month}</div>
+                        <div className="font-display text-2xl font-bold text-charcoal">{day}</div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display text-lg font-semibold text-charcoal mt-0.5 group-hover:text-burnt-orange transition-colors">{event.title}</h3>
+                        {event.title_ko && <p className="text-sm text-charcoal-light mt-0.5">{event.title_ko}</p>}
+                        {(event.location || event.location_ko) && (
+                          <div className="flex items-center gap-1.5 mt-3 text-xs text-charcoal-light">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {event.location_ko || event.location}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* Divider */}
