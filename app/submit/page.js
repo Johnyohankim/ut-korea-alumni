@@ -24,6 +24,38 @@ export default function SubmitPage() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [translating, setTranslating] = useState(false)
+
+  const translate = async (text, from, to) => {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, from, to }),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.translated
+  }
+
+  const handleTranslate = async (direction) => {
+    setTranslating(true)
+    try {
+      if (direction === 'en-to-ko') {
+        const [titleKo, contentKo] = await Promise.all([
+          form.title ? translate(form.title, 'en', 'ko') : Promise.resolve(''),
+          form.content ? translate(form.content, 'en', 'ko') : Promise.resolve(''),
+        ])
+        setForm(p => ({ ...p, titleKo: titleKo || p.titleKo, contentKo: contentKo || p.contentKo }))
+      } else {
+        const [title, content] = await Promise.all([
+          form.titleKo ? translate(form.titleKo, 'ko', 'en') : Promise.resolve(''),
+          form.contentKo ? translate(form.contentKo, 'ko', 'en') : Promise.resolve(''),
+        ])
+        setForm(p => ({ ...p, title: title || p.title, content: content || p.content }))
+      }
+    } catch { }
+    setTranslating(false)
+  }
 
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center pt-20 text-charcoal-light">{t('common.loading')}</div>
@@ -155,6 +187,21 @@ export default function SubmitPage() {
               </select>
             </div>
           )}
+
+          {/* Translate buttons */}
+          <div className="flex items-center gap-3">
+            <button type="button" disabled={translating || (!form.title && !form.content)} onClick={() => handleTranslate('en-to-ko')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg cursor-pointer border border-blue-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+              {translating ? t('common.loading') : 'EN → KO'}
+            </button>
+            <button type="button" disabled={translating || (!form.titleKo && !form.contentKo)} onClick={() => handleTranslate('ko-to-en')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg cursor-pointer border border-blue-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+              {translating ? t('common.loading') : 'KO → EN'}
+            </button>
+            {translating && <span className="text-xs text-charcoal-light">{t('common.loading')}</span>}
+          </div>
 
           {/* Title */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

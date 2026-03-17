@@ -25,6 +25,9 @@ export default function AdminPage() {
   const [editingEvent, setEditingEvent] = useState(null)
   const [uploadingEventImage, setUploadingEventImage] = useState(false)
 
+  const [translatingEvent, setTranslatingEvent] = useState(false)
+  const [translatingNews, setTranslatingNews] = useState(false)
+
   // News form state
   const [newsForm, setNewsForm] = useState({ title: '', titleKo: '', content: '', contentKo: '', published: false, category: 'news', externalUrl: '' })
   const [editingNews, setEditingNews] = useState(null)
@@ -75,6 +78,59 @@ export default function AdminPage() {
       body: JSON.stringify({ id, action, level }),
     })
     fetchAll()
+  }
+
+  const translateText = async (text, from, to) => {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, from, to }),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.translated
+  }
+
+  const handleTranslateEvent = async (direction) => {
+    setTranslatingEvent(true)
+    try {
+      if (direction === 'en-to-ko') {
+        const [titleKo, descriptionKo, locationKo] = await Promise.all([
+          eventForm.title ? translateText(eventForm.title, 'en', 'ko') : Promise.resolve(''),
+          eventForm.description ? translateText(eventForm.description, 'en', 'ko') : Promise.resolve(''),
+          eventForm.location ? translateText(eventForm.location, 'en', 'ko') : Promise.resolve(''),
+        ])
+        setEventForm(p => ({ ...p, titleKo: titleKo || p.titleKo, descriptionKo: descriptionKo || p.descriptionKo, locationKo: locationKo || p.locationKo }))
+      } else {
+        const [title, description, location] = await Promise.all([
+          eventForm.titleKo ? translateText(eventForm.titleKo, 'ko', 'en') : Promise.resolve(''),
+          eventForm.descriptionKo ? translateText(eventForm.descriptionKo, 'ko', 'en') : Promise.resolve(''),
+          eventForm.locationKo ? translateText(eventForm.locationKo, 'ko', 'en') : Promise.resolve(''),
+        ])
+        setEventForm(p => ({ ...p, title: title || p.title, description: description || p.description, location: location || p.location }))
+      }
+    } catch { }
+    setTranslatingEvent(false)
+  }
+
+  const handleTranslateNews = async (direction) => {
+    setTranslatingNews(true)
+    try {
+      if (direction === 'en-to-ko') {
+        const [titleKo, contentKo] = await Promise.all([
+          newsForm.title ? translateText(newsForm.title, 'en', 'ko') : Promise.resolve(''),
+          newsForm.content ? translateText(newsForm.content, 'en', 'ko') : Promise.resolve(''),
+        ])
+        setNewsForm(p => ({ ...p, titleKo: titleKo || p.titleKo, contentKo: contentKo || p.contentKo }))
+      } else {
+        const [title, content] = await Promise.all([
+          newsForm.titleKo ? translateText(newsForm.titleKo, 'ko', 'en') : Promise.resolve(''),
+          newsForm.contentKo ? translateText(newsForm.contentKo, 'ko', 'en') : Promise.resolve(''),
+        ])
+        setNewsForm(p => ({ ...p, title: title || p.title, content: content || p.content }))
+      }
+    } catch { }
+    setTranslatingNews(false)
   }
 
   const handleEventSubmit = async (e) => {
@@ -455,7 +511,19 @@ export default function AdminPage() {
           <div>
             {/* Event form */}
             <form onSubmit={handleEventSubmit} className="card p-6 mb-8 space-y-4">
-              <h3 className="font-display text-lg font-semibold text-charcoal">{editingEvent ? 'Edit Event' : 'Create Event'}</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-semibold text-charcoal">{editingEvent ? 'Edit Event' : 'Create Event'}</h3>
+                <div className="flex gap-2">
+                  <button type="button" disabled={translatingEvent || (!eventForm.title && !eventForm.description)} onClick={() => handleTranslateEvent('en-to-ko')}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg cursor-pointer border border-blue-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {translatingEvent ? '...' : 'EN → KO'}
+                  </button>
+                  <button type="button" disabled={translatingEvent || (!eventForm.titleKo && !eventForm.descriptionKo)} onClick={() => handleTranslateEvent('ko-to-en')}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg cursor-pointer border border-blue-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {translatingEvent ? '...' : 'KO → EN'}
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-charcoal mb-1">Title (EN) *</label>
@@ -575,7 +643,19 @@ export default function AdminPage() {
 
             {/* News form */}
             <form onSubmit={handleNewsSubmit} className="card p-6 mb-8 space-y-4">
-              <h3 className="font-display text-lg font-semibold text-charcoal">{editingNews ? 'Edit Article' : 'Create News Article'}</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-semibold text-charcoal">{editingNews ? 'Edit Article' : 'Create News Article'}</h3>
+                <div className="flex gap-2">
+                  <button type="button" disabled={translatingNews || (!newsForm.title && !newsForm.content)} onClick={() => handleTranslateNews('en-to-ko')}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg cursor-pointer border border-blue-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {translatingNews ? '...' : 'EN → KO'}
+                  </button>
+                  <button type="button" disabled={translatingNews || (!newsForm.titleKo && !newsForm.contentKo)} onClick={() => handleTranslateNews('ko-to-en')}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg cursor-pointer border border-blue-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {translatingNews ? '...' : 'KO → EN'}
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-charcoal mb-1">Title (EN) *</label>
