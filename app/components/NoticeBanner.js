@@ -9,7 +9,7 @@ export default function NoticeBanner() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    fetch('/api/settings')
+    fetch('/api/settings', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
         if (d.settings) {
