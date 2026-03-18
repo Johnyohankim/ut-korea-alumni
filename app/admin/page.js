@@ -17,7 +17,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [orgPositions, setOrgPositions] = useState([])
   const [orgSaving, setOrgSaving] = useState(false)
-  const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+' })
+  const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+', notice: '', notice_ko: '' })
   const [settingsSaving, setSettingsSaving] = useState(false)
 
   // Event form state
@@ -764,6 +764,32 @@ export default function AdminPage() {
           <div className="card p-6 md:p-8">
             <h2 className="font-display text-xl font-semibold text-charcoal mb-6">Site Settings</h2>
             <div className="space-y-6">
+              <div>
+                <h3 className="font-display text-base font-semibold text-charcoal mb-3">Important Notice Banner</h3>
+                <p className="text-sm text-charcoal-light mb-4">Displayed at the top of every page. Leave blank to hide.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-charcoal mb-1">Notice (EN)</label>
+                    <input
+                      type="text"
+                      value={siteSettings.notice || ''}
+                      onChange={(e) => setSiteSettings(prev => ({ ...prev, notice: e.target.value }))}
+                      className={inputClass}
+                      placeholder="e.g. Annual General Meeting on April 5th at 7PM KST"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-charcoal mb-1">Notice (KO)</label>
+                    <input
+                      type="text"
+                      value={siteSettings.notice_ko || ''}
+                      onChange={(e) => setSiteSettings(prev => ({ ...prev, notice_ko: e.target.value }))}
+                      className={inputClass}
+                      placeholder="예: 4월 5일 오후 7시 정기총회"
+                    />
+                  </div>
+                </div>
+              </div>
               <div>
                 <h3 className="font-display text-base font-semibold text-charcoal mb-3">Homepage Stats</h3>
                 <p className="text-sm text-charcoal-light mb-4">These numbers are displayed on the front page stats section.</p>
