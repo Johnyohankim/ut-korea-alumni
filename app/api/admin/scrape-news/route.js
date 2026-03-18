@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { parseStringPromise } from 'xml2js'
 
-const EN_RSS = 'https://www.sxsk.news/tag/english/rss/'
-const KO_RSS = 'https://www.sxsk.news/tag/korean/rss/'
+const SITEMAP_URL = 'https://www.sxsk.news/sitemap-posts.xml'
+const SITE_BASE = 'https://www.sxsk.news'
 
 function decodeEntities(str) {
   if (!str) return str
@@ -32,102 +32,123 @@ function stripHtml(html) {
     .trim()
 }
 
-async function fetchRssPage(url) {
-  const res = await fetch(url, { next: { revalidate: 0 } })
+// Fetch all post URLs from the sitemap
+async function fetchSitemapUrls() {
+  const res = await fetch(SITEMAP_URL, { next: { revalidate: 0 } })
   const xml = await res.text()
   const parsed = await parseStringPromise(xml, { explicitArray: false })
-  const items = parsed.rss.channel.item
-  if (!items) return []
-  return Array.isArray(items) ? items : [items]
+  const urls = parsed.urlset.url
+  if (!urls) return []
+  const items = Array.isArray(urls) ? urls : [urls]
+  return items.map(u => ({
+    url: u.loc,
+    lastmod: u.lastmod || null,
+  }))
 }
 
-async function fetchAllRss(baseUrl) {
-  const seen = new Set()
-  let allItems = []
-  let page = 1
-  while (true) {
-    const url = page === 1 ? baseUrl : `${baseUrl}?page=${page}`
-    try {
-      const items = await fetchRssPage(url)
-      if (items.length === 0) break
-      let newCount = 0
-      for (const item of items) {
-        const link = item.link
-        if (link && !seen.has(link)) {
-          seen.add(link)
-          allItems.push(item)
-          newCount++
-        }
-      }
-      // If all items on this page were duplicates, stop
-      if (newCount === 0) break
-      page++
-      if (page > 50) break
-    } catch {
-      break
-    }
-  }
-  return allItems
+// Extract og:title, og:description, and article content from a page
+async function fetchPageMeta(url) {
+  const res = await fetch(url, { next: { revalidate: 0 } })
+  const html = await res.text()
+
+  const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]*)"/) ||
+    html.match(/<meta\s+content="([^"]*)"\s+property="og:title"/)
+  const ogDesc = html.match(/<meta\s+property="og:description"\s+content="([^"]*)"/) ||
+    html.match(/<meta\s+content="([^"]*)"\s+property="og:description"/)
+  const ogDate = html.match(/<meta\s+property="article:published_time"\s+content="([^"]*)"/) ||
+    html.match(/<meta\s+content="([^"]*)"\s+property="article:published_time"/)
+
+  const title = ogTitle ? decodeEntities(ogTitle[1]) : ''
+  const description = ogDesc ? decodeEntities(ogDesc[1]) : ''
+  const pubDate = ogDate ? ogDate[1] : null
+
+  return { title, description, pubDate, url }
 }
 
-// Try to match EN and KO articles by publication date and position in the issue
-// Articles from the same issue published at the same time are likely pairs
+// Determine if a URL slug is Korean (romanized Korean slugs)
+function isKoreanUrl(url) {
+  const slug = url.replace(SITE_BASE, '').replace(/\//g, '')
+  // Korean slugs use romanized Korean patterns
+  const koPatterns = [
+    /^je\d+ho-/,        // 제N호- (volume N)
+    /^sxsk-je\d+ho/,    // sxsk-제N호
+    /^balhaengin/,       // 발행인 (publisher)
+    /^guingujig/,        // 구인구직 (careers)
+    /-sosig-/,           // 소식 (news)
+    /-iyagi-/,           // 이야기 (stories)
+    /-inteobyu-/,        // 인터뷰 (interview)
+    /-raipeuseutail-/,   // 라이프스타일 (lifestyle)
+    /-dongmun-/,         // 동문 (alumni)
+    /nyeon-.*weol-.*il/, // 년월일 (date pattern)
+  ]
+  return koPatterns.some(p => p.test(slug))
+}
+
+// Extract volume and section from title for matching
+function extractSection(title) {
+  const volMatch = title.match(/vol\.\s*(\d+)/i) || title.match(/제(\d+)호/)
+  const vol = volMatch ? (volMatch[1] || volMatch[2]) : null
+
+  const sectionMatch = title.match(/\[([^\]]+)\]/)
+  const section = sectionMatch ? sectionMatch[1].toLowerCase() : null
+
+  // Check for cover/index pages (e.g. "SXSK Vol. 3 — March 15, 2026")
+  const isCover = /^sxsk\s+(vol\.|제)/i.test(title)
+
+  return { vol, section, isCover }
+}
+
+// Section mapping for EN/KO matching
+const SECTION_MAP = {
+  "publisher's letter": "발행인의 글",
+  "utaka news": "utaka 소식",
+  "alumni news": "동문 이야기",
+  "ut stories": "ut 소식",
+  "texas news": "texas 소식",
+  "ut member interview": "ut 구성원 인터뷰",
+  "ut interview": "ut 구성원 인터뷰",
+  "lifestyle": "라이프스타일",
+  "careers": "커리어",
+}
+
 function matchArticles(enItems, koItems) {
   const matched = []
   const usedKo = new Set()
 
   for (const en of enItems) {
-    const enDate = new Date(en.pubDate).toISOString().slice(0, 10)
-    // Try to find a Korean article with same date and similar structure
-    // Ghost articles from same issue are published within minutes of each other
+    const enInfo = extractSection(en.title)
     let bestMatch = null
     let bestScore = 0
 
     for (let i = 0; i < koItems.length; i++) {
       if (usedKo.has(i)) continue
       const ko = koItems[i]
-      const koDate = new Date(ko.pubDate).toISOString().slice(0, 10)
-      if (koDate !== enDate) continue
+      const koInfo = extractSection(ko.title)
 
-      // Score by section tag similarity (e.g., both have "Publisher's Letter" section)
-      const enTitle = en.title.toLowerCase()
-      const koTitle = ko.title.toLowerCase()
+      let score = 0
 
-      let score = 1 // Same date
-      // Check for volume/section markers
-      const enVol = enTitle.match(/vol\.\s*(\d+)/)
-      const koVol = koTitle.match(/vol\.\s*(\d+)|제(\d+)호/)
-      if (enVol && koVol) {
-        const enNum = enVol[1]
-        const koNum = koVol[1] || koVol[2]
-        if (enNum === koNum) score += 2
+      // Same volume
+      if (enInfo.vol && koInfo.vol && enInfo.vol === koInfo.vol) score += 3
+
+      // Both are cover pages of same volume
+      if (enInfo.isCover && koInfo.isCover && enInfo.vol === koInfo.vol) {
+        score += 10
       }
 
-      // Check for section markers like [Publisher's Letter] / [발행인의 글]
-      const enSection = enTitle.match(/\[([^\]]+)\]/)
-      const koSection = koTitle.match(/\[([^\]]+)\]/)
-      if (enSection && koSection) {
-        // Same section type
-        const sectionMap = {
-          "publisher's letter": "발행인의 글",
-          "utaka news": "utaka 소식",
-          "alumni news": "동문 이야기",
-          "ut stories": "ut 소식",
-          "texas news": "texas 소식",
-          "ut interview": "ut 구성원 인터뷰",
-          "lifestyle": "라이프스타일",
-          "careers": "커리어",
-        }
-        const enSec = enSection[1].toLowerCase()
-        const koSec = koSection[1].toLowerCase()
-        if (sectionMap[enSec] === koSec || enSec === koSec) {
+      // Section matching
+      if (enInfo.section && koInfo.section) {
+        const mappedKo = SECTION_MAP[enInfo.section]
+        if (mappedKo === koInfo.section || enInfo.section === koInfo.section) {
           score += 5
         }
       }
 
-      // Time proximity bonus (within 30 minutes)
-      const timeDiff = Math.abs(new Date(en.pubDate) - new Date(ko.pubDate))
-      if (timeDiff < 30 * 60 * 1000) score += 2
+      // Date proximity
+      if (en.pubDate && ko.pubDate) {
+        const enDate = new Date(en.pubDate).toISOString().slice(0, 10)
+        const koDate = new Date(ko.pubDate).toISOString().slice(0, 10)
+        if (enDate === koDate) score += 2
+      }
 
       if (score > bestScore) {
         bestScore = score
@@ -135,7 +156,7 @@ function matchArticles(enItems, koItems) {
       }
     }
 
-    if (bestMatch && bestScore >= 3) {
+    if (bestMatch && bestScore >= 5) {
       usedKo.add(bestMatch.index)
       matched.push({ en, ko: bestMatch.item })
     } else {
@@ -178,17 +199,47 @@ export async function POST() {
   }
 
   try {
-    // Fetch both RSS feeds
+    // Fetch all post URLs from sitemap
+    const sitemapUrls = await fetchSitemapUrls()
+
+    // Separate EN and KO URLs
+    const enUrls = []
+    const koUrls = []
+    for (const item of sitemapUrls) {
+      if (isKoreanUrl(item.url)) {
+        koUrls.push(item)
+      } else {
+        enUrls.push(item)
+      }
+    }
+
+    // Fetch page metadata for all posts (in batches of 5 to avoid overwhelming)
+    async function fetchBatch(urls) {
+      const results = []
+      for (let i = 0; i < urls.length; i += 5) {
+        const batch = urls.slice(i, i + 5)
+        const batchResults = await Promise.all(
+          batch.map(u => fetchPageMeta(u.url).catch(() => null))
+        )
+        results.push(...batchResults.filter(Boolean))
+      }
+      return results
+    }
+
     const [enItems, koItems] = await Promise.all([
-      fetchAllRss(EN_RSS),
-      fetchAllRss(KO_RSS),
+      fetchBatch(enUrls),
+      fetchBatch(koUrls),
     ])
 
     // Get existing external URLs to avoid duplicates
     const { rows: existing } = await sql`
-      SELECT external_url FROM news WHERE external_url IS NOT NULL
+      SELECT external_url, external_url_ko FROM news WHERE external_url IS NOT NULL
     `
-    const existingUrls = new Set(existing.map(r => r.external_url))
+    const existingUrls = new Set()
+    for (const r of existing) {
+      if (r.external_url) existingUrls.add(r.external_url)
+      if (r.external_url_ko) existingUrls.add(r.external_url_ko)
+    }
 
     // Match EN/KO pairs
     const pairs = matchArticles(enItems, koItems)
@@ -198,10 +249,10 @@ export async function POST() {
     let updated = 0
 
     for (const { en, ko } of pairs) {
-      const enUrl = en?.link || null
-      const koUrl = ko?.link || null
+      const enUrl = en?.url || null
+      const koUrl = ko?.url || null
 
-      // If article already exists, update it with Korean URL if missing
+      // Skip if already exists
       if ((enUrl && existingUrls.has(enUrl)) || (koUrl && existingUrls.has(koUrl))) {
         if (enUrl && koUrl && existingUrls.has(enUrl)) {
           await sql`
@@ -214,19 +265,18 @@ export async function POST() {
         continue
       }
 
-      const title = en ? decodeEntities(en.title) : (ko ? decodeEntities(ko.title) : 'Untitled')
-      const titleKo = ko ? decodeEntities(ko.title) : null
+      const title = en ? en.title : (ko ? ko.title : 'Untitled')
+      const titleKo = ko ? ko.title : null
       const content = en ? stripHtml(en.description || '') : (ko ? stripHtml(ko.description || '') : '')
       const contentKo = ko ? stripHtml(ko.description || '') : null
       const externalUrl = enUrl || koUrl
-      const externalUrlKo = koUrl || null
-      const pubDate = en ? en.pubDate : ko.pubDate
+      const externalUrlKo = ko ? koUrl : null
+      const pubDate = en?.pubDate || ko?.pubDate || new Date().toISOString()
 
       await sql`
         INSERT INTO news (title, title_ko, content, content_ko, external_url, external_url_ko, category, approval_status, published, created_at, updated_at)
         VALUES (${title}, ${titleKo}, ${content}, ${contentKo}, ${externalUrl}, ${externalUrlKo}, 'news', 'approved', true, ${new Date(pubDate).toISOString()}, NOW())
       `
-      // Track newly inserted URLs to prevent duplicates within this run
       if (enUrl) existingUrls.add(enUrl)
       if (koUrl) existingUrls.add(koUrl)
       imported++
@@ -238,6 +288,7 @@ export async function POST() {
       updated,
       skipped,
       total: pairs.length,
+      fetched: { en: enItems.length, ko: koItems.length },
     })
   } catch (error) {
     console.error('Scrape error:', error)
