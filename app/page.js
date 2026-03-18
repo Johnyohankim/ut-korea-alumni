@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { useT, useLanguage } from './components/LanguageProvider'
 
 export default function Home() {
   const t = useT()
   const { locale } = useLanguage()
+  const { data: session } = useSession()
   const [stats, setStats] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+' })
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [latestNews, setLatestNews] = useState([])
@@ -71,8 +73,8 @@ export default function Home() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fade-in-up animate-delay-300">
-            <Link href="/signup" className="btn-primary text-base !py-3.5 !px-8 no-underline">
-              {t('hero.joinBtn')}
+            <Link href={session ? "/events" : "/signup"} className="btn-primary text-base !py-3.5 !px-8 no-underline">
+              {session ? t('hero.eventsBtn') : t('hero.joinBtn')}
             </Link>
             <Link href="/events" className="btn-secondary !border-white/30 !text-white hover:!bg-white/10 hover:!text-white text-base !py-3.5 !px-8 no-underline">
               {t('hero.eventsBtn')}
@@ -223,8 +225,8 @@ export default function Home() {
             <p className="text-white/80 text-lg mb-8 leading-relaxed">
               {t('hero.subtitle')}
             </p>
-            <Link href="/signup" className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-burnt-orange font-semibold rounded-lg hover:bg-cream transition-all duration-200 hover:-translate-y-0.5 shadow-lg no-underline">
-              {t('hero.joinBtn')}
+            <Link href={session ? "/events" : "/signup"} className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-burnt-orange font-semibold rounded-lg hover:bg-cream transition-all duration-200 hover:-translate-y-0.5 shadow-lg no-underline">
+              {session ? t('hero.eventsBtn') : t('hero.joinBtn')}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </Link>
           </div>
