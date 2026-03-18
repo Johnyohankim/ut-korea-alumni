@@ -65,23 +65,10 @@ async function fetchPageMeta(url) {
   return { title, description, pubDate, url }
 }
 
-// Determine if a URL slug is Korean (romanized Korean slugs)
-function isKoreanUrl(url) {
-  const slug = url.replace(SITE_BASE, '').replace(/\//g, '')
-  // Korean slugs use romanized Korean patterns
-  const koPatterns = [
-    /^je\d+ho-/,        // 제N호- (volume N)
-    /^sxsk-je\d+ho/,    // sxsk-제N호
-    /^balhaengin/,       // 발행인 (publisher)
-    /^guingujig/,        // 구인구직 (careers)
-    /-sosig-/,           // 소식 (news)
-    /-iyagi-/,           // 이야기 (stories)
-    /-inteobyu-/,        // 인터뷰 (interview)
-    /-raipeuseutail-/,   // 라이프스타일 (lifestyle)
-    /-dongmun-/,         // 동문 (alumni)
-    /nyeon-.*weol-.*il/, // 년월일 (date pattern)
-  ]
-  return koPatterns.some(p => p.test(slug))
+// Detect Korean by checking for Hangul characters in title
+function isKoreanTitle(title) {
+  // Hangul Unicode range: \uAC00-\uD7AF (syllables), \u3130-\u318F (jamo)
+  return /[\uAC00-\uD7AF\u3130-\u318F]/.test(title)
 }
 
 // Extract volume and section from title for matching
@@ -202,34 +189,26 @@ export async function POST() {
     // Fetch all post URLs from sitemap
     const sitemapUrls = await fetchSitemapUrls()
 
-    // Separate EN and KO URLs
-    const enUrls = []
-    const koUrls = []
-    for (const item of sitemapUrls) {
-      if (isKoreanUrl(item.url)) {
-        koUrls.push(item)
+    // Fetch page metadata for all posts (in batches of 5)
+    const allItems = []
+    for (let i = 0; i < sitemapUrls.length; i += 5) {
+      const batch = sitemapUrls.slice(i, i + 5)
+      const batchResults = await Promise.all(
+        batch.map(u => fetchPageMeta(u.url).catch(() => null))
+      )
+      allItems.push(...batchResults.filter(Boolean))
+    }
+
+    // Separate EN and KO by detecting Hangul in the title
+    const enItems = []
+    const koItems = []
+    for (const item of allItems) {
+      if (isKoreanTitle(item.title)) {
+        koItems.push(item)
       } else {
-        enUrls.push(item)
+        enItems.push(item)
       }
     }
-
-    // Fetch page metadata for all posts (in batches of 5 to avoid overwhelming)
-    async function fetchBatch(urls) {
-      const results = []
-      for (let i = 0; i < urls.length; i += 5) {
-        const batch = urls.slice(i, i + 5)
-        const batchResults = await Promise.all(
-          batch.map(u => fetchPageMeta(u.url).catch(() => null))
-        )
-        results.push(...batchResults.filter(Boolean))
-      }
-      return results
-    }
-
-    const [enItems, koItems] = await Promise.all([
-      fetchBatch(enUrls),
-      fetchBatch(koUrls),
-    ])
 
     // Get existing external URLs to avoid duplicates
     const { rows: existing } = await sql`
