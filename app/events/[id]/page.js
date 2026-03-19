@@ -152,7 +152,7 @@ export default function EventDetailPage({ params }) {
             {/* Attendees list */}
             {rsvps.length > 0 && (
               <div>
-                <h3 className="font-display text-lg font-semibold text-charcoal mb-4">{t('events.attendees')}</h3>
+                <h3 className="font-display text-lg font-semibold text-charcoal mb-4">{t('events.attendees')} ({rsvps.filter(r => r.status === 'attending').length})</h3>
                 <div className="flex flex-wrap gap-2">
                   {rsvps.filter(r => r.status === 'attending').map(r => (
                     <span key={r.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream-light rounded-full text-sm text-charcoal">
