@@ -73,8 +73,8 @@ export default function Home() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fade-in-up animate-delay-300">
-            <Link href={session ? "/events" : "/signup"} className="btn-primary text-base !py-3.5 !px-8 no-underline">
-              {session ? t('hero.eventsBtn') : t('hero.joinBtn')}
+            <Link href={session ? "/news" : "/signup"} className="btn-primary text-base !py-3.5 !px-8 no-underline">
+              {session ? t('news.viewAll') : t('hero.joinBtn')}
             </Link>
             <Link href="/events" className="btn-secondary !border-white/30 !text-white hover:!bg-white/10 hover:!text-white text-base !py-3.5 !px-8 no-underline">
               {t('hero.eventsBtn')}
