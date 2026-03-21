@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { useT, useLanguage } from '../components/LanguageProvider'
 
 const COMMITTEES = [
+  { key: 'board', en: 'Board of Directors', ko: '이사회',
+    descEn: null, descKo: null,
+    roles: [
+      { role: 'president', en: 'President', ko: '회장' },
+      { role: 'vice_president', en: 'Vice President', ko: '부회장' },
+      { role: 'general_secretary', en: 'General Secretary', ko: '총무' },
+      { role: 'treasurer', en: 'Treasurer', ko: '재무' },
+    ]},
   { key: 'executive', en: 'Executive Committee', ko: '집행위원회',
     descEn: null, descKo: null,
     roles: [

@@ -267,6 +267,12 @@ export default function AdminPage() {
 
   // Organization committee definitions
   const committees = [
+    { key: 'board', name: 'Board of Directors', nameKo: '이사회', slots: [
+      { role: 'president', label: 'President', count: 1 },
+      { role: 'vice_president', label: 'Vice President', count: 2 },
+      { role: 'general_secretary', label: 'General Secretary', count: 1 },
+      { role: 'treasurer', label: 'Treasurer', count: 1 },
+    ]},
     { key: 'executive', name: 'Executive Committee', nameKo: '집행위원회', slots: [
       { role: 'chair', label: 'Chair', count: 1 },
       { role: 'vice_chair', label: 'Vice Chair', count: 2 },
