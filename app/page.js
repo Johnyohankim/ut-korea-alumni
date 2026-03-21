@@ -52,9 +52,7 @@ export default function Home() {
         <div className="relative z-10 max-w-4xl mx-auto px-5 text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 mb-8 opacity-0 animate-fade-in-up">
-            <svg viewBox="0 0 40 28" className="w-5 h-3.5 fill-burnt-orange">
-              <path d="M20 12C20 12 16 4 8 2C6 1.5 3 1.5 1 3C0.5 3.3 0 4 0.5 4.5C1 5 2 4.8 3 4.5C5 3.8 7 4 8 5C10 7 12 10 14 12C15 13 17 15 20 15C23 15 25 13 26 12C28 10 30 7 32 5C33 4 35 3.8 37 4.5C38 4.8 39 5 39.5 4.5C40 4 39.5 3.3 39 3C37 1.5 34 1.5 32 2C24 4 20 12 20 12Z"/>
-            </svg>
+            <img src="/favicon.png" alt="UT Longhorn" className="w-5 h-5 object-contain" />
             <span className="text-white/90 text-sm font-medium tracking-wide">{t('hero.badge')}</span>
           </div>
 
