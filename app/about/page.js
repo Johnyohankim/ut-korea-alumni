@@ -11,7 +11,7 @@ const COMMITTEES = [
       { role: 'chair', en: 'Chair', ko: '위원장' },
       { role: 'vice_chair', en: 'Vice Chair', ko: '부위원장' },
       { role: 'general_secretary', en: 'General Secretary', ko: '총무' },
-      { role: 'historian', en: 'Historian', ko: '역사기록관' },
+      { role: 'historian', en: 'Historian', ko: '서기' },
     ]},
   { key: 'membership', en: 'Membership Development Committee', ko: '회원개발위원회',
     descEn: 'Focuses on increasing alumni engagement and membership, developing programs and benefits to attract and retain members.',
