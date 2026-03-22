@@ -517,11 +517,12 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-charcoal mb-2">교환학생 및 어학연수</h4>
+                    <h4 className="font-semibold text-charcoal mb-2">교환학생, 어학연수 및 기타</h4>
                     <ul className="space-y-1 text-charcoal-light list-none">
                       <li><span className="font-medium text-charcoal">Exchange</span> — 교환학생 (1학기 이상)</li>
                       <li><span className="font-medium text-charcoal">ESL / ELP</span> — 어학연수 (English as a Second Language / English Language Program)</li>
                       <li><span className="font-medium text-charcoal">Visiting</span> — 방문연구원</li>
+                      <li><span className="font-medium text-charcoal">Affiliated</span> — 대학 소속 직원 또는 협력 관계자</li>
                     </ul>
                   </div>
 
@@ -534,6 +535,7 @@ export default function ProfilePage() {
                       <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">Ph.D. Chemistry</code></li>
                       <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">Exchange, Economics</code></li>
                       <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">ESL</code></li>
+                      <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">Affiliated</code></li>
                     </ul>
                   </div>
 
@@ -566,11 +568,12 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-charcoal mb-2">Exchange & Language Programs</h4>
+                    <h4 className="font-semibold text-charcoal mb-2">Exchange, Language Programs & Other</h4>
                     <ul className="space-y-1 text-charcoal-light list-none">
                       <li><span className="font-medium text-charcoal">Exchange</span> — Exchange student (1+ semester)</li>
                       <li><span className="font-medium text-charcoal">ESL / ELP</span> — English as a Second Language / English Language Program</li>
                       <li><span className="font-medium text-charcoal">Visiting</span> — Visiting researcher/scholar</li>
+                      <li><span className="font-medium text-charcoal">Affiliated</span> — University staff or affiliated with the university</li>
                     </ul>
                   </div>
 
@@ -583,6 +586,7 @@ export default function ProfilePage() {
                       <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">Ph.D. Chemistry</code></li>
                       <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">Exchange, Economics</code></li>
                       <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">ESL</code></li>
+                      <li><code className="bg-cream px-1.5 py-0.5 rounded text-xs">Affiliated</code></li>
                     </ul>
                   </div>
 
