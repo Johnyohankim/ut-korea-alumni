@@ -53,6 +53,14 @@ export default function Home() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/40" />
 
+        {/* Hero arrows */}
+        <button onClick={() => { setHeroIdx(i => (i - 1 + heroImages.length) % heroImages.length) }} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/50 transition-all cursor-pointer" aria-label="Previous image">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button onClick={() => { setHeroIdx(i => (i + 1) % heroImages.length) }} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/50 transition-all cursor-pointer" aria-label="Next image">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+        </button>
+
         {/* Geometric accent shapes */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-burnt-orange/8 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gold/6 rounded-full blur-[100px] -translate-x-1/4 translate-y-1/4" />
