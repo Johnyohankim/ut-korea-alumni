@@ -14,6 +14,7 @@ export default function EventDetailPage({ params }) {
   const [rsvps, setRsvps] = useState([])
   const [myRsvp, setMyRsvp] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [activeImageIdx, setActiveImageIdx] = useState(0)
 
   const fetchEvent = async () => {
     const res = await fetch(`/api/events/${id}`)
@@ -67,10 +68,25 @@ export default function EventDetailPage({ params }) {
         </Link>
 
         <div className="card overflow-hidden">
-          {/* Event image */}
-          {event.image_url && (
-            <img src={event.image_url} alt={event.title} className="w-full h-64 md:h-80 object-cover" />
-          )}
+          {/* Event images */}
+          {(() => {
+            let images = []
+            if (event.image_url) {
+              try { const p = JSON.parse(event.image_url); images = Array.isArray(p) ? p : [event.image_url] } catch { images = [event.image_url] }
+            }
+            if (images.length === 0) return null
+            if (images.length === 1) return <img src={images[0]} alt={event.title} className="w-full h-64 md:h-80 object-cover" />
+            return (
+              <div>
+                <img src={images[activeImageIdx] || images[0]} alt={event.title} className="w-full h-64 md:h-80 object-cover" />
+                <div className="flex gap-1 p-2 bg-charcoal/5 overflow-x-auto">
+                  {images.map((url, i) => (
+                    <img key={i} src={url} alt={`${event.title} ${i + 1}`} className={`w-20 h-14 object-cover rounded cursor-pointer flex-shrink-0 transition-opacity ${i === activeImageIdx ? 'ring-2 ring-burnt-orange opacity-100' : 'opacity-60 hover:opacity-100'}`} onClick={() => setActiveImageIdx(i)} />
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Date header */}
           <div className="bg-gradient-to-r from-burnt-orange to-burnt-dark p-6 md:p-8 text-white">
