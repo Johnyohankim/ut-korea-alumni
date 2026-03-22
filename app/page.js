@@ -12,6 +12,13 @@ export default function Home() {
   const [stats, setStats] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+' })
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [latestNews, setLatestNews] = useState([])
+  const heroImages = ['/grand reunion.jpg', '/home2.jpg', '/home3.jpeg', '/home4.jpg', '/home 5.jpg']
+  const [heroIdx, setHeroIdx] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => setHeroIdx(i => (i + 1) % heroImages.length), 6000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(d => {
@@ -37,9 +44,11 @@ export default function Home() {
     <>
       {/* Hero Section */}
       <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden hero-texture">
-        {/* Background */}
+        {/* Background — rotating images */}
         <div className="absolute inset-0">
-          <img src="/grand reunion.jpg" alt="" className="w-full h-full object-cover" />
+          {heroImages.map((src, i) => (
+            <img key={src} src={src} alt="" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000" style={{ opacity: i === heroIdx ? 1 : 0 }} />
+          ))}
           <div className="absolute inset-0 bg-charcoal/70" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/40" />
