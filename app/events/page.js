@@ -61,9 +61,9 @@ export default function EventsPage() {
                 {upcoming.map(event => (
                   <Link key={event.id} href={`/events/${event.id}`} className="card overflow-hidden flex flex-col md:flex-row no-underline group">
                     {/* Image or Date block */}
-                    {event.image_url ? (
+                    {(() => { try { const p = JSON.parse(event.image_url); return Array.isArray(p) ? p[0] : event.image_url } catch { return event.image_url } })() ? (
                       <div className="shrink-0 w-full md:w-48 h-40 md:h-auto relative">
-                        <img src={(() => { try { const p = JSON.parse(event.image_url); return Array.isArray(p) ? p[0] : event.image_url } catch { return event.image_url } })()} alt={event.title} className="w-full h-full object-cover" />
+                        <img src={(() => { try { const p = JSON.parse(event.image_url); return Array.isArray(p) ? p[0] || '' : event.image_url } catch { return event.image_url } })()} alt={event.title} className="w-full h-full object-cover" />
                         <div className="absolute top-2 left-2 bg-burnt-orange text-white text-xs font-bold px-2 py-1 rounded">
                           {getMonth(event.event_date)} {getDay(event.event_date)}
                         </div>

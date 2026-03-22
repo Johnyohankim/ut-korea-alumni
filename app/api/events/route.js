@@ -31,9 +31,12 @@ export async function POST(request) {
     return Response.json({ error: 'Title and date are required' }, { status: 400 })
   }
 
+  // Treat empty JSON arrays as null
+  const cleanImageUrl = imageUrl && imageUrl !== '[]' ? imageUrl : null
+
   const { rows } = await sql`
     INSERT INTO events (title, title_ko, description, description_ko, event_date, end_date, location, location_ko, image_url, max_attendees, external_url, time_tba, location_tba, created_by)
-    VALUES (${title}, ${titleKo || null}, ${description || null}, ${descriptionKo || null}, ${eventDate}, ${endDate || null}, ${location || null}, ${locationKo || null}, ${imageUrl || null}, ${maxAttendees ? parseInt(maxAttendees) : null}, ${externalUrl || null}, ${!!timeTba}, ${!!locationTba}, ${parseInt(session.user.id)})
+    VALUES (${title}, ${titleKo || null}, ${description || null}, ${descriptionKo || null}, ${eventDate}, ${endDate || null}, ${location || null}, ${locationKo || null}, ${cleanImageUrl}, ${maxAttendees ? parseInt(maxAttendees) : null}, ${externalUrl || null}, ${!!timeTba}, ${!!locationTba}, ${parseInt(session.user.id)})
     RETURNING *
   `
 
