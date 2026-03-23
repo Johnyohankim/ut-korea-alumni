@@ -17,7 +17,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [orgPositions, setOrgPositions] = useState([])
   const [orgSaving, setOrgSaving] = useState(false)
-  const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+', notice: '', notice_ko: '' })
+  const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+', notice: '', notice_ko: '', greeting_president: '', greeting_president_ko: '' })
   const [settingsSaving, setSettingsSaving] = useState(false)
 
   // Event form state
@@ -825,6 +825,32 @@ export default function AdminPage() {
                       onChange={(e) => setSiteSettings(prev => ({ ...prev, notice_ko: e.target.value }))}
                       className={inputClass}
                       placeholder="예: 4월 5일 오후 7시 정기총회"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-display text-base font-semibold text-charcoal mb-3">President&apos;s Greeting (About Page)</h3>
+                <p className="text-sm text-charcoal-light mb-4">Displayed in the Greetings section on the About page. Leave blank to hide.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-charcoal mb-1">Greeting (EN)</label>
+                    <textarea
+                      value={siteSettings.greeting_president || ''}
+                      onChange={(e) => setSiteSettings(prev => ({ ...prev, greeting_president: e.target.value }))}
+                      className={inputClass}
+                      rows={8}
+                      placeholder="President's greeting message in English..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-charcoal mb-1">Greeting (KO)</label>
+                    <textarea
+                      value={siteSettings.greeting_president_ko || ''}
+                      onChange={(e) => setSiteSettings(prev => ({ ...prev, greeting_president_ko: e.target.value }))}
+                      className={inputClass}
+                      rows={8}
+                      placeholder="회장 인사말을 한국어로 입력하세요..."
                     />
                   </div>
                 </div>

@@ -58,9 +58,14 @@ export default function AboutPage() {
   const t = useT()
   const { locale } = useLanguage()
   const [positions, setPositions] = useState([])
+  const [greeting, setGreeting] = useState({ en: '', ko: '' })
 
   useEffect(() => {
     fetch('/api/org').then(r => r.json()).then(d => setPositions(d.positions || []))
+    fetch('/api/settings').then(r => r.json()).then(d => {
+      const s = d.settings || {}
+      setGreeting({ en: s.greeting_president || '', ko: s.greeting_president_ko || '' })
+    }).catch(() => {})
   }, [])
 
   const getMembers = (committeeKey, role) =>
@@ -75,6 +80,23 @@ export default function AboutPage() {
           <h1 className="section-heading text-center">{t('about.title')}</h1>
           <p className="section-subheading mx-auto text-center">{t('about.subtitle')}</p>
         </div>
+
+        {/* Greetings */}
+        {(greeting.en || greeting.ko) && (
+          <div id="greetings" className="card p-8 md:p-10 mb-8 scroll-mt-24">
+            <h2 className="font-display text-2xl font-semibold text-charcoal mb-6">
+              {locale === 'ko' ? '인사말' : 'Greetings'}
+            </h2>
+            <div className="space-y-4">
+              <h3 className="font-display text-lg font-semibold text-burnt-orange">
+                {locale === 'ko' ? '회장 인사말' : "President's Greeting"}
+              </h3>
+              <p className="text-charcoal leading-relaxed whitespace-pre-wrap">
+                {locale === 'ko' ? (greeting.ko || greeting.en) : (greeting.en || greeting.ko)}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div id="organization" className="card p-8 md:p-10 scroll-mt-24">
           {locale === 'ko' ? (
