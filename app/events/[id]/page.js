@@ -55,7 +55,8 @@ export default function EventDetailPage({ params }) {
     return <div className="min-h-screen flex items-center justify-center pt-20 text-charcoal-light">Event not found</div>
   }
 
-  const eventDate = new Date(event.event_date)
+  // event_date is stored as text "YYYY-MM-DDTHH:mm" in KST — append +09:00 to parse correctly
+  const eventDate = new Date((event.event_date || '').slice(0, 16) + ':00+09:00')
   const isPast = eventDate < new Date()
 
   return (

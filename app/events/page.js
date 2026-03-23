@@ -17,27 +17,21 @@ export default function EventsPage() {
       .catch(() => setLoading(false))
   }, [])
 
+  // event_date is stored as text "YYYY-MM-DDTHH:mm" in KST — append +09:00 to parse as KST
+  const toKSTDate = (dateStr) => new Date((dateStr || '').slice(0, 16) + ':00+09:00')
+
   const now = new Date()
-  const upcoming = events.filter(e => new Date(e.event_date) >= now).sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
-  const past = events.filter(e => new Date(e.event_date) < now)
-
-  const KST = 'Asia/Seoul'
-
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr)
-    return locale === 'ko'
-      ? d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: KST })
-      : d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: KST })
-  }
+  const upcoming = events.filter(e => toKSTDate(e.event_date) >= now).sort((a, b) => toKSTDate(a.event_date) - toKSTDate(b.event_date))
+  const past = events.filter(e => toKSTDate(e.event_date) < now)
 
   const formatTime = (dateStr) => {
-    const d = new Date(dateStr)
-    const time = d.toLocaleTimeString(locale === 'ko' ? 'ko-KR' : 'en-US', { hour: '2-digit', minute: '2-digit', timeZone: KST })
+    const d = toKSTDate(dateStr)
+    const time = d.toLocaleTimeString(locale === 'ko' ? 'ko-KR' : 'en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })
     return `${time} KST`
   }
 
-  const getMonth = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { month: 'short', timeZone: KST }).toUpperCase()
-  const getDay = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', timeZone: KST })
+  const getMonth = (dateStr) => toKSTDate(dateStr).toLocaleDateString('en-US', { month: 'short', timeZone: 'Asia/Seoul' }).toUpperCase()
+  const getDay = (dateStr) => toKSTDate(dateStr).toLocaleDateString('en-US', { day: 'numeric', timeZone: 'Asia/Seoul' })
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-5 md:px-8">

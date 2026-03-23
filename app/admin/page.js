@@ -138,9 +138,8 @@ export default function AdminPage() {
     e.preventDefault()
     const url = editingEvent ? `/api/events/${editingEvent}` : '/api/events'
     const method = editingEvent ? 'PUT' : 'POST'
-    // Ensure eventDate is always YYYY-MM-DDTHH:mm:00+09:00 (KST)
-    const rawDate = (eventForm.eventDate || '').slice(0, 16) // strip any trailing :ss or timezone
-    const payload = { ...eventForm, imageUrl: JSON.stringify(eventImageUrls), eventDate: rawDate ? rawDate + ':00+09:00' : '' }
+    // Store the datetime-local value as-is (YYYY-MM-DDTHH:mm), no timezone conversion
+    const payload = { ...eventForm, imageUrl: JSON.stringify(eventImageUrls), eventDate: (eventForm.eventDate || '').slice(0, 16) }
     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
@@ -153,26 +152,11 @@ export default function AdminPage() {
     fetchAll()
   }
 
-  const toKSTLocal = (dateStr) => {
-    if (!dateStr) return ''
-    const d = new Date(dateStr)
-    if (isNaN(d.getTime())) return ''
-    // Format as YYYY-MM-DDTHH:mm in KST for datetime-local input
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-    }).formatToParts(d)
-    const get = (type) => parts.find(p => p.type === type)?.value || '00'
-    const h = get('hour').padStart(2, '0')
-    const m = get('minute').padStart(2, '0')
-    return `${get('year')}-${get('month')}-${get('day')}T${h}:${m}`
-  }
-
   const handleEditEvent = (event) => {
     setEditingEvent(event.id)
     setEventForm({
       title: event.title, titleKo: event.title_ko || '', description: event.description || '', descriptionKo: event.description_ko || '',
-      eventDate: toKSTLocal(event.event_date), location: event.location || '', locationKo: event.location_ko || '', maxAttendees: event.max_attendees || '',
+      eventDate: (event.event_date || '').slice(0, 16), location: event.location || '', locationKo: event.location_ko || '', maxAttendees: event.max_attendees || '',
       externalUrl: event.external_url || '',
       timeTba: event.time_tba || false, locationTba: event.location_tba || false,
       attendeeOverride: event.attendee_override || '',
