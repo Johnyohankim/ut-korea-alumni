@@ -82,21 +82,44 @@ export default function AboutPage() {
         </div>
 
         {/* Greetings */}
-        {(greeting.en || greeting.ko) && (
-          <div id="greetings" className="card p-8 md:p-10 mb-8 scroll-mt-24">
-            <h2 className="font-display text-2xl font-semibold text-charcoal mb-6">
-              {locale === 'ko' ? '인사말' : 'Greetings'}
-            </h2>
-            <div className="space-y-4">
-              <h3 className="font-display text-lg font-semibold text-burnt-orange">
-                {locale === 'ko' ? '회장 인사말' : "President's Greeting"}
-              </h3>
-              <p className="text-charcoal leading-relaxed whitespace-pre-wrap">
-                {locale === 'ko' ? (greeting.ko || greeting.en) : (greeting.en || greeting.ko)}
-              </p>
+        {(greeting.en || greeting.ko) && (() => {
+          const president = positions.find(p => p.committee === 'board' && p.role === 'president' && p.member_id)
+          return (
+            <div id="greetings" className="card p-8 md:p-10 mb-8 scroll-mt-24">
+              <h2 className="font-display text-2xl font-semibold text-charcoal mb-6">
+                {locale === 'ko' ? '인사말' : 'Greetings'}
+              </h2>
+              <div className="space-y-6">
+                <h3 className="font-display text-lg font-semibold text-burnt-orange">
+                  {locale === 'ko' ? '회장 인사말' : "President's Greeting"}
+                </h3>
+                {president && (
+                  <Link href={`/members/${president.member_id}`} className="flex items-center gap-4 no-underline group">
+                    {president.profile_image_url ? (
+                      <img src={president.profile_image_url} alt={president.name} className="w-20 h-20 rounded-full object-cover ring-2 ring-burnt-orange/30 group-hover:ring-burnt-orange transition-all" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-burnt-orange to-burnt-dark flex items-center justify-center text-white font-display text-2xl font-bold ring-2 ring-burnt-orange/30">
+                        {president.name?.[0] || '?'}
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-display text-lg font-semibold text-charcoal group-hover:text-burnt-orange transition-colors">
+                        {locale === 'ko' && president.name_ko ? president.name_ko : president.name}
+                      </div>
+                      <div className="text-sm text-charcoal-light">
+                        {locale === 'ko' ? '회장' : 'President'}
+                        {president.company && ` · ${president.company}`}
+                      </div>
+                    </div>
+                  </Link>
+                )}
+                <p className="text-charcoal leading-relaxed whitespace-pre-wrap">
+                  {locale === 'ko' ? (greeting.ko || greeting.en) : (greeting.en || greeting.ko)}
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         <div id="organization" className="card p-8 md:p-10 scroll-mt-24">
           {locale === 'ko' ? (
