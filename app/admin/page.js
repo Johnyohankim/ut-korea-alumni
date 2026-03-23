@@ -21,7 +21,7 @@ export default function AdminPage() {
   const [settingsSaving, setSettingsSaving] = useState(false)
 
   // Event form state
-  const [eventForm, setEventForm] = useState({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', timeTba: false, locationTba: false })
+  const [eventForm, setEventForm] = useState({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', timeTba: false, locationTba: false, attendeeOverride: '' })
   const [eventImageUrls, setEventImageUrls] = useState([])
   const [editingEvent, setEditingEvent] = useState(null)
   const [uploadingEventImage, setUploadingEventImage] = useState(false)
@@ -145,7 +145,7 @@ export default function AdminPage() {
       alert(data.error || 'Failed to save event')
       return
     }
-    setEventForm({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', timeTba: false, locationTba: false })
+    setEventForm({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', timeTba: false, locationTba: false, attendeeOverride: '' })
     setEventImageUrls([])
     setEditingEvent(null)
     fetchAll()
@@ -170,6 +170,7 @@ export default function AdminPage() {
       eventDate: toKSTLocal(event.event_date), location: event.location || '', locationKo: event.location_ko || '', maxAttendees: event.max_attendees || '',
       externalUrl: event.external_url || '',
       timeTba: event.time_tba || false, locationTba: event.location_tba || false,
+      attendeeOverride: event.attendee_override || '',
     })
     setEventImageUrls((() => { try { const p = JSON.parse(event.image_url); return Array.isArray(p) ? p : event.image_url ? [event.image_url] : [] } catch { return event.image_url ? [event.image_url] : [] } })())
   }
@@ -577,6 +578,10 @@ export default function AdminPage() {
                   <label className="block text-xs font-medium text-charcoal mb-1">Max Attendees</label>
                   <input type="number" value={eventForm.maxAttendees} onChange={e => setEventForm(p => ({ ...p, maxAttendees: e.target.value }))} className={inputClass} />
                 </div>
+                <div>
+                  <label className="block text-xs font-medium text-charcoal mb-1">Attendee Count Override</label>
+                  <input type="number" value={eventForm.attendeeOverride} onChange={e => setEventForm(p => ({ ...p, attendeeOverride: e.target.value }))} className={inputClass} placeholder="Leave empty to use RSVP count" />
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -630,7 +635,7 @@ export default function AdminPage() {
               <div className="flex gap-3">
                 <button type="submit" className="btn-primary text-sm">{editingEvent ? 'Update' : 'Create'} Event</button>
                 {editingEvent && (
-                  <button type="button" onClick={() => { setEditingEvent(null); setEventImageUrls([]); setEventForm({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', timeTba: false, locationTba: false }) }} className="btn-secondary text-sm">Cancel</button>
+                  <button type="button" onClick={() => { setEditingEvent(null); setEventImageUrls([]); setEventForm({ title: '', titleKo: '', description: '', descriptionKo: '', eventDate: '', location: '', locationKo: '', maxAttendees: '', externalUrl: '', timeTba: false, locationTba: false, attendeeOverride: '' }) }} className="btn-secondary text-sm">Cancel</button>
                 )}
               </div>
             </form>

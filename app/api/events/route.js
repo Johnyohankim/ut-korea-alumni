@@ -6,7 +6,7 @@ import { canCreateEvent } from '@/lib/permissions'
 export async function GET() {
   const { rows: events } = await sql`
     SELECT e.*, m.name as creator_name,
-      (SELECT COUNT(*) FROM event_rsvps WHERE event_id = e.id AND status = 'attending') as attendee_count
+      COALESCE(e.attendee_override, (SELECT COUNT(*) FROM event_rsvps WHERE event_id = e.id AND status = 'attending')::int) as attendee_count
     FROM events e
     LEFT JOIN members m ON e.created_by = m.id
     ORDER BY e.event_date DESC
@@ -25,7 +25,7 @@ export async function POST(request) {
   }
 
   const body = await request.json()
-  const { title, titleKo, description, descriptionKo, eventDate, endDate, location, locationKo, imageUrl, maxAttendees, externalUrl, timeTba, locationTba } = body
+  const { title, titleKo, description, descriptionKo, eventDate, endDate, location, locationKo, imageUrl, maxAttendees, externalUrl, timeTba, locationTba, attendeeOverride } = body
 
   if (!title || !eventDate) {
     return Response.json({ error: 'Title and date are required' }, { status: 400 })
@@ -35,8 +35,8 @@ export async function POST(request) {
   const cleanImageUrl = imageUrl && imageUrl !== '[]' ? imageUrl : null
 
   const { rows } = await sql`
-    INSERT INTO events (title, title_ko, description, description_ko, event_date, end_date, location, location_ko, image_url, max_attendees, external_url, time_tba, location_tba, created_by)
-    VALUES (${title}, ${titleKo || null}, ${description || null}, ${descriptionKo || null}, ${eventDate}, ${endDate || null}, ${location || null}, ${locationKo || null}, ${cleanImageUrl}, ${maxAttendees ? parseInt(maxAttendees) : null}, ${externalUrl || null}, ${!!timeTba}, ${!!locationTba}, ${parseInt(session.user.id)})
+    INSERT INTO events (title, title_ko, description, description_ko, event_date, end_date, location, location_ko, image_url, max_attendees, external_url, time_tba, location_tba, attendee_override, created_by)
+    VALUES (${title}, ${titleKo || null}, ${description || null}, ${descriptionKo || null}, ${eventDate}, ${endDate || null}, ${location || null}, ${locationKo || null}, ${cleanImageUrl}, ${maxAttendees ? parseInt(maxAttendees) : null}, ${externalUrl || null}, ${!!timeTba}, ${!!locationTba}, ${attendeeOverride ? parseInt(attendeeOverride) : null}, ${parseInt(session.user.id)})
     RETURNING *
   `
 

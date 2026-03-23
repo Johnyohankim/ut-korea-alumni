@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
 
   const { rows: events } = await sql`
     SELECT e.*, m.name as creator_name,
-      (SELECT COUNT(*) FROM event_rsvps WHERE event_id = e.id AND status = 'attending') as attendee_count
+      COALESCE(e.attendee_override, (SELECT COUNT(*) FROM event_rsvps WHERE event_id = e.id AND status = 'attending')::int) as attendee_count
     FROM events e
     LEFT JOIN members m ON e.created_by = m.id
     WHERE e.id = ${parseInt(id)}
@@ -49,7 +49,7 @@ export async function PUT(request, { params }) {
   }
 
   const body = await request.json()
-  const { title, titleKo, description, descriptionKo, eventDate, endDate, location, locationKo, imageUrl, maxAttendees, externalUrl, timeTba, locationTba } = body
+  const { title, titleKo, description, descriptionKo, eventDate, endDate, location, locationKo, imageUrl, maxAttendees, externalUrl, timeTba, locationTba, attendeeOverride } = body
 
   const cleanImageUrl = imageUrl && imageUrl !== '[]' ? imageUrl : null
 
@@ -61,7 +61,8 @@ export async function PUT(request, { params }) {
       location = ${location || null}, location_ko = ${locationKo || null},
       image_url = ${cleanImageUrl}, max_attendees = ${maxAttendees ? parseInt(maxAttendees) : null},
       external_url = ${externalUrl || null},
-      time_tba = ${!!timeTba}, location_tba = ${!!locationTba}
+      time_tba = ${!!timeTba}, location_tba = ${!!locationTba},
+      attendee_override = ${attendeeOverride ? parseInt(attendeeOverride) : null}
     WHERE id = ${parseInt(id)}
   `
 

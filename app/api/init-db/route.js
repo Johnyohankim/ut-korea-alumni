@@ -148,6 +148,7 @@ export async function GET(request) {
     await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url TEXT`
     await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS time_tba BOOLEAN DEFAULT false`
     await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS location_tba BOOLEAN DEFAULT false`
+    await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS attendee_override INTEGER`
     // Convert event_date/end_date to TIMESTAMPTZ so timezone offsets are preserved
     await sql`ALTER TABLE events ALTER COLUMN event_date TYPE TIMESTAMPTZ USING event_date AT TIME ZONE 'Asia/Seoul'`
     await sql`ALTER TABLE events ALTER COLUMN end_date TYPE TIMESTAMPTZ USING end_date AT TIME ZONE 'Asia/Seoul'`
