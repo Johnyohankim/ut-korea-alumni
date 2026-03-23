@@ -576,9 +576,11 @@ export default function AdminPage() {
                 <div>
                   <label className="block text-xs font-medium text-charcoal mb-1">Date & Time (KST) *</label>
                   <input type="datetime-local" step="1800" value={eventForm.eventDate} onChange={e => setEventForm(p => ({ ...p, eventDate: e.target.value }))} required className={inputClass} />
-                  <label className="flex items-center gap-2 mt-1.5 cursor-pointer">
+                  <label className={`flex items-center gap-2 mt-1.5 cursor-pointer ${eventForm.timeTba ? 'bg-amber-50 border border-amber-300 rounded-lg px-2 py-1 -mx-2' : ''}`}>
                     <input type="checkbox" checked={eventForm.timeTba} onChange={e => setEventForm(p => ({ ...p, timeTba: e.target.checked }))} className="rounded" />
-                    <span className="text-xs text-charcoal-light">Time TBA (show date only)</span>
+                    <span className={`text-xs ${eventForm.timeTba ? 'text-amber-700 font-semibold' : 'text-charcoal-light'}`}>
+                      Time TBA {eventForm.timeTba ? '— time will show as "TBA" on event page' : '(show date only)'}
+                    </span>
                   </label>
                 </div>
                 <div>
@@ -600,9 +602,11 @@ export default function AdminPage() {
                   <input type="text" value={eventForm.locationKo} onChange={e => setEventForm(p => ({ ...p, locationKo: e.target.value }))} className={inputClass} disabled={eventForm.locationTba} />
                 </div>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer -mt-2">
+              <label className={`flex items-center gap-2 cursor-pointer -mt-2 ${eventForm.locationTba ? 'bg-amber-50 border border-amber-300 rounded-lg px-2 py-1' : ''}`}>
                 <input type="checkbox" checked={eventForm.locationTba} onChange={e => setEventForm(p => ({ ...p, locationTba: e.target.checked }))} className="rounded" />
-                <span className="text-xs text-charcoal-light">Location TBA</span>
+                <span className={`text-xs ${eventForm.locationTba ? 'text-amber-700 font-semibold' : 'text-charcoal-light'}`}>
+                  Location TBA {eventForm.locationTba ? '— location will show as "TBA" on event page' : ''}
+                </span>
               </label>
               <div>
                 <label className="block text-xs font-medium text-charcoal mb-1">Description (EN)</label>
