@@ -4,11 +4,54 @@ import Footer from './components/Footer'
 import { LanguageProvider } from './components/LanguageProvider'
 import SessionProvider from './components/SessionProvider'
 
+const siteUrl = 'https://www.utkorea.org'
+
 export const metadata = {
-  title: 'UT Austin Korea Alumni Association',
-  description: 'Connecting University of Texas at Austin Longhorns in Korea — 텍사스 대학교 오스틴 한국 동문회',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'UT Austin Korea Alumni Association | 텍사스 대학교 오스틴 한국 동문회',
+    template: '%s | UT Austin Korea Alumni',
+  },
+  description: 'Official alumni network connecting University of Texas at Austin Longhorns living in Korea. Join events, network with fellow alumni, and stay connected. 한국에 거주하는 UT Austin 동문들을 연결하는 공식 동문회입니다.',
+  keywords: ['UT Austin', 'University of Texas', 'Korea alumni', 'Longhorns', '텍사스 대학교', '한국 동문회', 'UT Austin Korea', 'alumni network', 'Hook em'],
+  authors: [{ name: 'UT Austin Korea Alumni Association' }],
   icons: {
     icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    alternateLocale: 'en_US',
+    url: siteUrl,
+    siteName: 'UT Austin Korea Alumni Association',
+    title: 'UT Austin Korea Alumni Association | 텍사스 대학교 오스틴 한국 동문회',
+    description: 'Connecting University of Texas at Austin Longhorns in Korea. Join events, network, and stay connected with fellow alumni.',
+    images: [
+      {
+        url: '/grand reunion.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'UT Austin Korea Alumni Association',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'UT Austin Korea Alumni Association',
+    description: 'Connecting UT Austin Longhorns in Korea — 텍사스 대학교 오스틴 한국 동문회',
+    images: ['/grand reunion.jpg'],
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
 }
 
