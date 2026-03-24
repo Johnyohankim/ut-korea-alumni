@@ -217,7 +217,11 @@ export default function Home() {
               return (
                 <Link key={article.id} href={`/news/${article.id}`} className="card overflow-hidden group cursor-pointer no-underline">
                   <div className="h-44 bg-gradient-to-br from-cream to-cream-light relative overflow-hidden">
-                    <div className="absolute inset-0 diagonal-accent" />
+                    {article.image_url ? (
+                      <img src={article.image_url} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 diagonal-accent" />
+                    )}
                     <div className="absolute bottom-3 left-4">
                       <span className="text-[0.65rem] font-semibold bg-white/90 text-charcoal-light px-2.5 py-1 rounded-full">{dateStr}</span>
                     </div>

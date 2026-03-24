@@ -121,9 +121,13 @@ export default function NewsPage() {
 
               return (
                 <CardTag key={article.id} {...cardProps} className="card overflow-hidden flex flex-col md:flex-row no-underline group">
-                  {/* Placeholder image area */}
+                  {/* Image area */}
                   <div className="shrink-0 w-full md:w-56 h-40 md:h-auto bg-gradient-to-br from-cream to-cream-light relative overflow-hidden">
-                    <div className="absolute inset-0 diagonal-accent" />
+                    {article.image_url ? (
+                      <img src={article.image_url} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 diagonal-accent" />
+                    )}
                   </div>
                   <div className="flex-1 p-5 md:p-6">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
