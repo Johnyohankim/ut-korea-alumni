@@ -34,7 +34,7 @@ export default function Footer() {
               <li><Link href="/news" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.news')}</Link></li>
               <li><Link href="/members" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.members')}</Link></li>
               <li><Link href="/dues" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.dues')}</Link></li>
-              <li><Link href="/about#organization" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.about')}</Link></li>
+              <li><Link href="/about#org-chart" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">{t('nav.about')}</Link></li>
             </ul>
           </div>
 
@@ -48,6 +48,16 @@ export default function Footer() {
               <li>
                 <a href="https://www.utexas.edu" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">
                   {t('footer.univ')}
+                </a>
+              </li>
+              <li>
+                <a href="https://www.winalumnicup.com" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">
+                  Win Alumni Cup
+                </a>
+              </li>
+              <li>
+                <a href="https://www.sxsk.news" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">
+                  SXSK News
                 </a>
               </li>
             </ul>
