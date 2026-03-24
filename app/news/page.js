@@ -124,7 +124,7 @@ export default function NewsPage() {
                   {/* Image area */}
                   <div className="shrink-0 w-full md:w-56 h-40 md:h-auto bg-gradient-to-br from-cream to-cream-light relative overflow-hidden">
                     {article.image_url ? (
-                      <img src={article.image_url} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={article.image_url} alt={article.title} className="absolute inset-0 w-full h-full object-cover" />
                     ) : (
                       <div className="absolute inset-0 diagonal-accent" />
                     )}
