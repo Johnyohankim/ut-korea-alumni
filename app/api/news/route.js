@@ -47,7 +47,18 @@ export async function POST(request) {
   }
 
   const body = await request.json()
-  const { title, titleKo, content, contentKo, imageUrl, published, category, subcategory, externalUrl } = body
+  let { title, titleKo, content, contentKo, imageUrl, published, category, subcategory, externalUrl } = body
+
+  // Auto-scrape OG image from external URL if no image provided
+  if (externalUrl && !imageUrl) {
+    try {
+      const res = await fetch(externalUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(5000) })
+      const html = await res.text()
+      const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+        || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
+      if (ogMatch) imageUrl = ogMatch[1]
+    } catch {}
+  }
 
   if (!title || !content) {
     return Response.json({ error: 'Title and content are required' }, { status: 400 })
