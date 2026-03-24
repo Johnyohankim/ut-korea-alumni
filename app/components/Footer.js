@@ -44,7 +44,7 @@ export default function Footer() {
               {t('footer.contact')}
             </h4>
             <ul className="space-y-2.5 list-none">
-              <li className="text-sm text-white/60">utaustinkorea@gmail.com</li>
+              <li><a href="mailto:Utaustin.korea@gmail.com" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">Utaustin.korea@gmail.com</a></li>
               <li>
                 <a href="https://www.utexas.edu" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-burnt-orange transition-colors no-underline">
                   {t('footer.univ')}
