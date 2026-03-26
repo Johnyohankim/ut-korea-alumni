@@ -251,7 +251,11 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/scrape-news', { method: 'POST' })
       const data = await res.json()
       if (res.ok) {
-        setScrapeResult(`Cleared ${delData.deleted} old articles. Re-imported ${data.imported} articles.`)
+        // Backfill OG images for newly imported articles
+        const imgRes = await fetch('/api/news/backfill-images', { method: 'POST' })
+        const imgData = await imgRes.json()
+        const imgMsg = imgRes.ok ? ` Backfilled ${imgData.updated}/${imgData.total} images.` : ''
+        setScrapeResult(`Cleared ${delData.deleted} old articles. Re-imported ${data.imported} articles.${imgMsg}`)
         fetchAll()
       } else {
         setScrapeResult(`Cleared ${delData.deleted} but import failed: ${data.error}`)
