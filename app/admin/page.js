@@ -442,6 +442,32 @@ export default function AdminPage() {
         {/* Members Tab */}
         {activeTab === 'members' && (
           <div className="space-y-3">
+            <button
+              onClick={() => {
+                const headers = ['Name', 'Name (KO)', 'Email', 'Graduation Year', 'Major', 'Location', 'Company', 'Title', 'Membership Level', 'Approved', 'Admin', 'Joined']
+                const escape = (v) => {
+                  if (v == null) return ''
+                  const s = String(v)
+                  return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
+                }
+                const rows = members.map(m => [
+                  m.name, m.name_ko, m.email, m.graduation_year, m.major, m.location, m.company, m.title,
+                  m.membership_level || 'general', m.is_approved ? 'Yes' : 'No', m.is_admin ? 'Yes' : 'No',
+                  m.created_at ? new Date(m.created_at).toLocaleDateString() : ''
+                ].map(escape).join(','))
+                const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n')
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `members_${new Date().toISOString().slice(0, 10)}.csv`
+                a.click()
+                URL.revokeObjectURL(url)
+              }}
+              className="px-4 py-2 bg-charcoal text-white text-sm font-semibold rounded-lg hover:bg-charcoal/80 transition-colors cursor-pointer border-none"
+            >
+              Download CSV ({members.length})
+            </button>
             {members.map(member => (
               <div key={member.id} className={`card p-4 flex flex-col sm:flex-row sm:items-center gap-3 ${!member.is_approved ? 'border-amber-300 bg-amber-50/30' : ''}`}>
                 <div className="flex-1 min-w-0">
