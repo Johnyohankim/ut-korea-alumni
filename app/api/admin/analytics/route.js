@@ -21,7 +21,7 @@ export async function GET() {
     const membersByYear = await sql`
       SELECT graduation_year AS year, COUNT(*)::int AS count
       FROM members
-      WHERE graduation_year IS NOT NULL AND graduation_year != ''
+      WHERE graduation_year IS NOT NULL AND graduation_year != '' AND graduation_year ~ '^\d+$'
       GROUP BY graduation_year
       ORDER BY graduation_year
     `
