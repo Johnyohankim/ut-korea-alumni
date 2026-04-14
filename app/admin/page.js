@@ -1199,6 +1199,20 @@ export default function AdminPage() {
                   {/* News Stats */}
                   <div className="card p-6">
                     <h2 className="font-display text-lg font-semibold text-charcoal mb-4">News Articles</h2>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="font-display text-xl font-bold text-blue-700">{analytics.totalViews?.total_views || 0}</div>
+                        <div className="text-[11px] text-charcoal-light mt-0.5">Total Reads</div>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="font-display text-xl font-bold text-blue-700">{analytics.totalViews?.total_articles || 0}</div>
+                        <div className="text-[11px] text-charcoal-light mt-0.5">Published</div>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="font-display text-xl font-bold text-blue-700">{analytics.totalViews?.avg_views || 0}</div>
+                        <div className="text-[11px] text-charcoal-light mt-0.5">Avg Reads</div>
+                      </div>
+                    </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
@@ -1223,6 +1237,28 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Most Read Articles */}
+                {analytics.articleViews?.length > 0 && (
+                  <div className="card p-6">
+                    <h2 className="font-display text-lg font-semibold text-charcoal mb-4">Most Read Articles</h2>
+                    <div className="space-y-2">
+                      {analytics.articleViews.map((a, i) => {
+                        const max = Math.max(...analytics.articleViews.map(x => Number(x.views)), 1)
+                        return (
+                          <div key={a.id} className="flex items-center gap-3">
+                            <span className="text-xs font-medium text-charcoal-light w-5 shrink-0">{i + 1}</span>
+                            <span className="text-sm text-charcoal truncate flex-1">{a.title}</span>
+                            <div className="w-24 bg-charcoal/5 rounded-full h-4 overflow-hidden shrink-0">
+                              <div className="h-full bg-blue-500/70 rounded-full" style={{ width: `${(Number(a.views) / max) * 100}%` }} />
+                            </div>
+                            <span className="text-sm font-medium text-charcoal w-10 text-right shrink-0">{a.views}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div className="text-center">
                   <button

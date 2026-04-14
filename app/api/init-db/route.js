@@ -179,6 +179,7 @@ export async function GET(request) {
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS approval_status VARCHAR(20) DEFAULT 'approved'`
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url TEXT`
     await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS external_url_ko TEXT`
+    await sql`ALTER TABLE news ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0`
 
     // Migrate old 'news' category to 'sxsk'
     await sql`UPDATE news SET category = 'sxsk' WHERE category = 'news'`

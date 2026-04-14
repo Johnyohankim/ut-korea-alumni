@@ -28,6 +28,9 @@ export async function GET(request, { params }) {
     }
   }
 
+  // Increment view count (fire and forget)
+  sql`UPDATE news SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${parseInt(id)}`.catch(() => {})
+
   return Response.json({ article })
 }
 

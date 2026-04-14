@@ -97,6 +97,22 @@ export async function GET() {
       FROM members
     `)
 
+    const articleViews = await safeQuery('articleViews', () => sql`
+      SELECT id, title, COALESCE(view_count, 0) AS views, category
+      FROM news
+      WHERE published = true
+      ORDER BY COALESCE(view_count, 0) DESC
+      LIMIT 10
+    `)
+
+    const totalViews = await safeQuery('totalViews', () => sql`
+      SELECT SUM(COALESCE(view_count, 0)) AS total_views,
+             COUNT(*) AS total_articles,
+             ROUND(AVG(COALESCE(view_count, 0)), 1) AS avg_views
+      FROM news
+      WHERE published = true
+    `)
+
     const topEvents = await safeQuery('topEvents', () => sql`
       SELECT e.id, e.title, e.event_date,
              SUM(CASE WHEN r.status = 'attending' THEN 1 ELSE 0 END) AS attendees
@@ -118,6 +134,8 @@ export async function GET() {
       newsByCategory: newsByCategory.rows,
       recentLogins: recentLogins.rows[0] || {},
       topEvents: topEvents.rows,
+      articleViews: articleViews.rows,
+      totalViews: totalViews.rows[0] || {},
     })
   } catch (err) {
     console.error('Analytics error:', err)
