@@ -44,7 +44,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src="/favicon.png" alt="UTAKA" className="w-16 h-16 mx-auto mb-4" />
+          <img src="/favicon.png" alt="UTAKA" className="w-16 mx-auto mb-4" />
           <h1 className="font-display text-3xl font-bold text-charcoal">{t('auth.loginTitle')}</h1>
           <p className="text-charcoal-light mt-2">{t('auth.loginSubtitle')}</p>
         </div>
