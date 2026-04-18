@@ -98,7 +98,7 @@ export async function POST(request) {
 
     // Admin posts are auto-approved, member posts need approval
     const approvalStatus = isAdmin ? 'approved' : 'pending'
-    const isPublished = isAdmin ? (published || false) : false
+    const isPublished = isAdmin ? true : false
 
     const { rows } = await sql`
       INSERT INTO news (title, title_ko, content, content_ko, author_id, image_url, published, category, subcategory, external_url, approval_status)
