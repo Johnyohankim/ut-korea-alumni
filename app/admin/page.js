@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [teams, setTeams] = useState([])
   const [teamSavingId, setTeamSavingId] = useState(null)
   const [newTeamName, setNewTeamName] = useState('')
+  const [memberSearch, setMemberSearch] = useState('')
   const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+', notice: '', notice_ko: '', greeting_president: '', greeting_president_ko: '' })
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [analytics, setAnalytics] = useState(null)
@@ -514,8 +515,30 @@ export default function AdminPage() {
         </div>
 
         {/* Members Tab */}
-        {activeTab === 'members' && (
+        {activeTab === 'members' && (() => {
+          const q = memberSearch.trim().toLowerCase()
+          const filteredMembers = q
+            ? members.filter(m => {
+                const fields = [m.name, m.name_ko, m.email, m.company, m.title, m.major, m.location, String(m.graduation_year || '')]
+                return fields.some(f => f && String(f).toLowerCase().includes(q))
+              })
+            : members
+          return (
           <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              <input
+                type="search"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Search by name, email, company, major, year..."
+                className={inputClass + ' max-w-md'}
+              />
+              {q && (
+                <span className="text-xs text-charcoal-light">
+                  {filteredMembers.length} of {members.length} match
+                </span>
+              )}
+            </div>
             <button
               onClick={() => {
                 const headers = ['Name', 'Name (KO)', 'Email', 'Graduation Year', 'Major', 'Location', 'Company', 'Title', 'Membership Level', 'Approved', 'Admin', 'Joined']
@@ -542,7 +565,10 @@ export default function AdminPage() {
             >
               Download CSV ({members.length})
             </button>
-            {members.map(member => (
+            {filteredMembers.length === 0 && (
+              <p className="text-sm text-charcoal-light py-8 text-center">No members match &ldquo;{memberSearch}&rdquo;.</p>
+            )}
+            {filteredMembers.map(member => (
               <div key={member.id} className={`card p-4 flex flex-col sm:flex-row sm:items-center gap-3 ${!member.is_approved ? 'border-amber-300 bg-amber-50/30' : ''}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -588,7 +614,8 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
-        )}
+          )
+        })()}
 
         {/* Submissions Tab */}
         {activeTab === 'submissions' && (
