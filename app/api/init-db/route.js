@@ -136,11 +136,11 @@ export async function GET(request) {
     if (ppCount[0]?.n === 0) {
       await sql`
         INSERT INTO past_presidents (member_id, term_start, term_end, sort_order)
-        SELECT id, 2015, 2019, 0 FROM members WHERE name_ko = '구자균' LIMIT 1
+        SELECT id, 2015, 2019, 0 FROM members WHERE id = 135
       `
       await sql`
         INSERT INTO past_presidents (member_id, term_start, term_end, sort_order)
-        SELECT id, 2020, 2024, 1 FROM members WHERE name_ko = '지정삼' LIMIT 1
+        SELECT id, 2020, 2024, 1 FROM members WHERE id = 36
       `
     }
 
