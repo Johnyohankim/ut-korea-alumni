@@ -131,6 +131,36 @@ export async function GET(request) {
       )
     `
 
+    // Teams table (admin-editable: orchestra, golf, running crew, etc.)
+    // Member assignments live in org_positions with committee = teams.key,
+    // role = 'leader' or 'member'.
+    await sql`
+      CREATE TABLE IF NOT EXISTS teams (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR(50) UNIQUE NOT NULL,
+        name_en VARCHAR(200) NOT NULL,
+        name_ko VARCHAR(200),
+        description_en TEXT,
+        description_ko TEXT,
+        leader_label_en VARCHAR(100) NOT NULL DEFAULT 'Leader',
+        leader_label_ko VARCHAR(100),
+        sort_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `
+
+    // Seed initial teams (idempotent — only runs when table is empty)
+    const { rows: teamCount } = await sql`SELECT COUNT(*)::int AS n FROM teams`
+    if (teamCount[0]?.n === 0) {
+      await sql`
+        INSERT INTO teams (key, name_en, name_ko, leader_label_en, leader_label_ko, sort_order)
+        VALUES
+          ('orchestra', 'Longhorn Orchestra', '롱혼 오케스트라', 'Director', '단장', 0),
+          ('golf', 'Golf Team', '골프 팀', 'Captain', '주장', 1),
+          ('running_crew', 'Running Crew', '러닝 크루', 'Crew Leader', '크루 리더', 2)
+      `
+    }
+
     // Seed past presidents (idempotent — only runs when table is empty)
     const { rows: ppCount } = await sql`SELECT COUNT(*)::int AS n FROM past_presidents`
     if (ppCount[0]?.n === 0) {

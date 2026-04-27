@@ -60,6 +60,7 @@ export default function AboutPage() {
   const [positions, setPositions] = useState([])
   const [greeting, setGreeting] = useState({ en: '', ko: '' })
   const [pastPresidents, setPastPresidents] = useState([])
+  const [teams, setTeams] = useState([])
 
   useEffect(() => {
     fetch('/api/org').then(r => r.json()).then(d => setPositions(d.positions || []))
@@ -68,6 +69,7 @@ export default function AboutPage() {
       setGreeting({ en: s.greeting_president || '', ko: s.greeting_president_ko || '' })
     }).catch(() => {})
     fetch('/api/past-presidents').then(r => r.json()).then(d => setPastPresidents(d.pastPresidents || [])).catch(() => {})
+    fetch('/api/teams').then(r => r.json()).then(d => setTeams(d.teams || [])).catch(() => {})
   }, [])
 
   const getMembers = (committeeKey, role) =>
@@ -216,6 +218,73 @@ export default function AboutPage() {
             </div>
           )}
         </div>
+
+        {/* Teams section */}
+        {teams.length > 0 && (
+          <div id="teams" className="card p-8 md:p-10 mt-8 scroll-mt-24">
+            <h2 className="font-display text-2xl font-semibold text-charcoal mb-2">
+              {locale === 'ko' ? '팀 활동' : 'Teams'}
+            </h2>
+            <p className="text-sm text-charcoal-light mb-6">
+              {locale === 'ko'
+                ? '동문회 산하의 팀 활동 모임입니다.'
+                : 'Active teams and clubs within the alumni association.'}
+            </p>
+            <div className="space-y-6">
+              {teams.map(team => {
+                const teamName = locale === 'ko' && team.name_ko ? team.name_ko : team.name_en
+                const teamDesc = locale === 'ko' && team.description_ko ? team.description_ko : team.description_en
+                const leaderLabel = locale === 'ko' && team.leader_label_ko ? team.leader_label_ko : team.leader_label_en
+                return (
+                  <div key={team.id} className="border border-charcoal/10 rounded-xl p-5">
+                    <h3 className="font-display text-lg font-semibold text-burnt-orange mb-1">{teamName}</h3>
+                    {teamDesc && (
+                      <p className="text-xs text-charcoal-light mb-4">{teamDesc}</p>
+                    )}
+                    {team.leader && (
+                      <div className="mb-3">
+                        <div className="text-xs font-semibold text-charcoal mb-2">{leaderLabel}</div>
+                        <Link href={`/members/${team.leader.member_id}`} className="flex items-center gap-3 no-underline group w-fit">
+                          {team.leader.profile_image_url ? (
+                            <img src={team.leader.profile_image_url} alt={team.leader.name || ''} className="w-12 h-12 rounded-full object-cover ring-2 ring-burnt-orange/30 group-hover:ring-burnt-orange transition-all" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-burnt-orange to-burnt-dark flex items-center justify-center text-white font-display text-sm font-bold ring-2 ring-burnt-orange/30">
+                              {(locale === 'ko' && team.leader.name_ko ? team.leader.name_ko : team.leader.name)?.[0] || '?'}
+                            </div>
+                          )}
+                          <div className="text-sm text-charcoal group-hover:text-burnt-orange transition-colors">
+                            {locale === 'ko' && team.leader.name_ko ? team.leader.name_ko : team.leader.name}
+                            {team.leader.graduation_year ? ` '${String(team.leader.graduation_year).slice(-2)}` : ''}
+                          </div>
+                        </Link>
+                      </div>
+                    )}
+                    {team.members.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold text-charcoal mb-2">
+                          {locale === 'ko' ? '멤버' : 'Members'}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                          {team.members.map(m => (
+                            <Link key={m.id} href={`/members/${m.member_id}`} className="text-sm text-charcoal-light hover:text-burnt-orange transition-colors no-underline">
+                              {locale === 'ko' && m.name_ko ? m.name_ko : m.name}
+                              {m.graduation_year ? ` '${String(m.graduation_year).slice(-2)}` : ''}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {!team.leader && team.members.length === 0 && (
+                      <p className="text-sm text-charcoal-light italic">
+                        {locale === 'ko' ? '멤버 모집 중' : 'Recruiting members'}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Past Presidents section */}
         <div id="past-presidents" className="card p-8 md:p-10 mt-8 scroll-mt-24">

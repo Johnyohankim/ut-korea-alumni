@@ -19,6 +19,9 @@ export default function AdminPage() {
   const [orgSaving, setOrgSaving] = useState(false)
   const [pastPresidents, setPastPresidents] = useState([])
   const [pastPresidentsSaving, setPastPresidentsSaving] = useState(false)
+  const [teams, setTeams] = useState([])
+  const [teamSavingId, setTeamSavingId] = useState(null)
+  const [newTeamName, setNewTeamName] = useState('')
   const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+', notice: '', notice_ko: '', greeting_president: '', greeting_president_ko: '' })
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [analytics, setAnalytics] = useState(null)
@@ -45,7 +48,7 @@ export default function AdminPage() {
 
   const fetchAll = async () => {
     setLoading(true)
-    const [membersRes, eventsRes, newsRes, subsRes, orgRes, settingsRes, ppRes] = await Promise.all([
+    const [membersRes, eventsRes, newsRes, subsRes, orgRes, settingsRes, ppRes, teamsRes] = await Promise.all([
       fetch('/api/admin/members'),
       fetch('/api/events'),
       fetch('/api/admin/news'),
@@ -53,8 +56,9 @@ export default function AdminPage() {
       fetch('/api/admin/org'),
       fetch('/api/admin/settings'),
       fetch('/api/admin/past-presidents'),
+      fetch('/api/admin/teams'),
     ])
-    const [membersData, eventsData, newsData, subsData, orgData, settingsData, ppData] = await Promise.all([
+    const [membersData, eventsData, newsData, subsData, orgData, settingsData, ppData, teamsData] = await Promise.all([
       membersRes.json(),
       eventsRes.json(),
       newsRes.json(),
@@ -62,6 +66,7 @@ export default function AdminPage() {
       orgRes.json(),
       settingsRes.json(),
       ppRes.json(),
+      teamsRes.json(),
     ])
     setMembers(membersData.members || [])
     setEvents(eventsData.events || [])
@@ -69,6 +74,7 @@ export default function AdminPage() {
     setSubmissions(subsData.submissions || [])
     setOrgPositions(orgData.positions || [])
     setPastPresidents(ppData.pastPresidents || [])
+    setTeams(teamsData.teams || [])
     if (settingsData.settings) {
       setSiteSettings(prev => ({ ...prev, ...settingsData.settings }))
     }
@@ -372,6 +378,61 @@ export default function AdminPage() {
 
   const removePastPresident = (idx) => {
     setPastPresidents(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  const updateTeam = (id, field, value) => {
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t))
+  }
+
+  const toggleTeamMember = (teamId, memberId, checked) => {
+    setTeams(prev => prev.map(t => {
+      if (t.id !== teamId) return t
+      const ids = t.member_ids || []
+      const next = checked
+        ? [...ids, memberId].filter((v, i, a) => a.indexOf(v) === i)
+        : ids.filter(id => id !== memberId)
+      return { ...t, member_ids: next }
+    }))
+  }
+
+  const handleTeamSave = async (team) => {
+    setTeamSavingId(team.id)
+    await fetch('/api/admin/teams', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: team.id,
+        name_en: team.name_en,
+        name_ko: team.name_ko,
+        description_en: team.description_en,
+        description_ko: team.description_ko,
+        leader_label_en: team.leader_label_en,
+        leader_label_ko: team.leader_label_ko,
+        sort_order: team.sort_order,
+        leader_member_id: team.leader_member_id || null,
+        member_ids: team.member_ids || [],
+      }),
+    })
+    await fetchAll()
+    setTeamSavingId(null)
+  }
+
+  const handleTeamDelete = async (id) => {
+    if (!confirm('Delete this team and all its assignments?')) return
+    await fetch(`/api/admin/teams?id=${id}`, { method: 'DELETE' })
+    await fetchAll()
+  }
+
+  const handleTeamCreate = async () => {
+    const name = newTeamName.trim()
+    if (!name) return
+    await fetch('/api/admin/teams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name_en: name, leader_label_en: 'Leader' }),
+    })
+    setNewTeamName('')
+    await fetchAll()
   }
 
   const fetchAnalytics = async () => {
@@ -1419,6 +1480,121 @@ export default function AdminPage() {
                 >
                   {pastPresidentsSaving ? 'Saving...' : 'Save Past Presidents'}
                 </button>
+              </div>
+            </div>
+
+            <div className="mt-10 pt-8 border-t border-charcoal/10">
+              <h2 className="font-display text-xl font-semibold text-charcoal mb-2">Teams</h2>
+              <p className="text-sm text-charcoal-light mb-6">Activity teams (orchestra, golf, running crew, etc.). Each saves independently.</p>
+
+              <div className="flex gap-2 mb-6">
+                <input
+                  type="text"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  placeholder="New team name (English)"
+                  className={inputClass + ' max-w-sm'}
+                />
+                <button
+                  type="button"
+                  onClick={handleTeamCreate}
+                  disabled={!newTeamName.trim()}
+                  className="px-4 py-2 rounded-lg border border-charcoal/15 text-sm text-charcoal hover:bg-charcoal/5 cursor-pointer disabled:opacity-50"
+                >
+                  + Add team
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {teams.map(team => {
+                  const approvedMembers = members.filter(m => m.is_approved)
+                  return (
+                    <div key={team.id} className="border border-charcoal/10 rounded-xl p-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <label className="block text-xs font-medium text-charcoal-light mb-1">Name (English)</label>
+                          <input type="text" value={team.name_en || ''} onChange={(e) => updateTeam(team.id, 'name_en', e.target.value)} className={inputClass} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-charcoal-light mb-1">Name (Korean)</label>
+                          <input type="text" value={team.name_ko || ''} onChange={(e) => updateTeam(team.id, 'name_ko', e.target.value)} className={inputClass} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-charcoal-light mb-1">Leader title (English)</label>
+                          <input type="text" value={team.leader_label_en || ''} onChange={(e) => updateTeam(team.id, 'leader_label_en', e.target.value)} className={inputClass} placeholder="Director / Captain / Crew Leader" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-charcoal-light mb-1">Leader title (Korean)</label>
+                          <input type="text" value={team.leader_label_ko || ''} onChange={(e) => updateTeam(team.id, 'leader_label_ko', e.target.value)} className={inputClass} placeholder="단장 / 주장 / 크루 리더" />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-xs font-medium text-charcoal-light mb-1">Description (English)</label>
+                          <textarea value={team.description_en || ''} onChange={(e) => updateTeam(team.id, 'description_en', e.target.value)} className={inputClass} rows={2} />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-xs font-medium text-charcoal-light mb-1">Description (Korean)</label>
+                          <textarea value={team.description_ko || ''} onChange={(e) => updateTeam(team.id, 'description_ko', e.target.value)} className={inputClass} rows={2} />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-xs font-medium text-charcoal-light mb-1">{team.leader_label_en || 'Leader'}</label>
+                        <select
+                          value={team.leader_member_id || ''}
+                          onChange={(e) => updateTeam(team.id, 'leader_member_id', e.target.value || null)}
+                          className={inputClass}
+                        >
+                          <option value="">— None —</option>
+                          {approvedMembers.map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.name}{m.name_ko ? ` (${m.name_ko})` : ''} — {m.graduation_year || '?'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-xs font-medium text-charcoal-light mb-2">Members ({(team.member_ids || []).length} selected)</label>
+                        <div className="max-h-48 overflow-y-auto border border-charcoal/10 rounded-lg p-3 space-y-1">
+                          {approvedMembers.map(m => {
+                            const checked = (team.member_ids || []).includes(m.id)
+                            return (
+                              <label key={m.id} className="flex items-center gap-2 text-sm text-charcoal cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) => toggleTeamMember(team.id, m.id, e.target.checked)}
+                                />
+                                {m.name}{m.name_ko ? ` (${m.name_ko})` : ''} — {m.graduation_year || '?'}
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleTeamSave(team)}
+                          disabled={teamSavingId === team.id}
+                          className="btn-primary !py-2 !px-5 cursor-pointer"
+                        >
+                          {teamSavingId === team.id ? 'Saving...' : 'Save Team'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleTeamDelete(team.id)}
+                          className="text-sm text-red-600 hover:text-red-800 cursor-pointer bg-transparent border-0 px-0"
+                        >
+                          Delete team
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+                {teams.length === 0 && (
+                  <p className="text-sm text-charcoal-light">No teams yet. Add one above.</p>
+                )}
               </div>
             </div>
           </div>
