@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [orgPositions, setOrgPositions] = useState([])
   const [orgSaving, setOrgSaving] = useState(false)
+  const [pastPresidents, setPastPresidents] = useState([])
+  const [pastPresidentsSaving, setPastPresidentsSaving] = useState(false)
   const [siteSettings, setSiteSettings] = useState({ stat_members: '150+', stat_events: '50+', stat_years: '15+', notice: '', notice_ko: '', greeting_president: '', greeting_president_ko: '' })
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [analytics, setAnalytics] = useState(null)
@@ -43,27 +45,30 @@ export default function AdminPage() {
 
   const fetchAll = async () => {
     setLoading(true)
-    const [membersRes, eventsRes, newsRes, subsRes, orgRes, settingsRes] = await Promise.all([
+    const [membersRes, eventsRes, newsRes, subsRes, orgRes, settingsRes, ppRes] = await Promise.all([
       fetch('/api/admin/members'),
       fetch('/api/events'),
       fetch('/api/admin/news'),
       fetch('/api/admin/submissions'),
       fetch('/api/admin/org'),
       fetch('/api/admin/settings'),
+      fetch('/api/admin/past-presidents'),
     ])
-    const [membersData, eventsData, newsData, subsData, orgData, settingsData] = await Promise.all([
+    const [membersData, eventsData, newsData, subsData, orgData, settingsData, ppData] = await Promise.all([
       membersRes.json(),
       eventsRes.json(),
       newsRes.json(),
       subsRes.json(),
       orgRes.json(),
       settingsRes.json(),
+      ppRes.json(),
     ])
     setMembers(membersData.members || [])
     setEvents(eventsData.events || [])
     setArticles(newsData.articles || [])
     setSubmissions(subsData.submissions || [])
     setOrgPositions(orgData.positions || [])
+    setPastPresidents(ppData.pastPresidents || [])
     if (settingsData.settings) {
       setSiteSettings(prev => ({ ...prev, ...settingsData.settings }))
     }
@@ -344,6 +349,29 @@ export default function AdminPage() {
     })
     await fetchAll()
     setOrgSaving(false)
+  }
+
+  const handlePastPresidentsSave = async () => {
+    setPastPresidentsSaving(true)
+    await fetch('/api/admin/past-presidents', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pastPresidents }),
+    })
+    await fetchAll()
+    setPastPresidentsSaving(false)
+  }
+
+  const updatePastPresident = (idx, field, value) => {
+    setPastPresidents(prev => prev.map((pp, i) => i === idx ? { ...pp, [field]: value } : pp))
+  }
+
+  const addPastPresident = () => {
+    setPastPresidents(prev => [...prev, { id: `new-${Date.now()}`, member_id: '', term_start: '', term_end: '' }])
+  }
+
+  const removePastPresident = (idx) => {
+    setPastPresidents(prev => prev.filter((_, i) => i !== idx))
   }
 
   const fetchAnalytics = async () => {
@@ -1318,6 +1346,81 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
+
+            <div className="mt-10 pt-8 border-t border-charcoal/10">
+              <h2 className="font-display text-xl font-semibold text-charcoal mb-2">Past Presidents</h2>
+              <p className="text-sm text-charcoal-light mb-6">Listed in display order on the About page.</p>
+              <div className="space-y-3">
+                {pastPresidents.map((pp, idx) => (
+                  <div key={pp.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border border-charcoal/10 rounded-xl p-4">
+                    <div className="md:col-span-6">
+                      <label className="block text-xs font-medium text-charcoal-light mb-1">Member</label>
+                      <select
+                        value={pp.member_id || ''}
+                        onChange={(e) => updatePastPresident(idx, 'member_id', e.target.value)}
+                        className={inputClass}
+                      >
+                        <option value="">— Select member —</option>
+                        {members.filter(m => m.is_approved).map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}{m.name_ko ? ` (${m.name_ko})` : ''} — {m.graduation_year || '?'}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-charcoal-light mb-1">Term start</label>
+                      <input
+                        type="number"
+                        value={pp.term_start || ''}
+                        onChange={(e) => updatePastPresident(idx, 'term_start', e.target.value)}
+                        className={inputClass}
+                        placeholder="2015"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-charcoal-light mb-1">Term end</label>
+                      <input
+                        type="number"
+                        value={pp.term_end || ''}
+                        onChange={(e) => updatePastPresident(idx, 'term_end', e.target.value)}
+                        className={inputClass}
+                        placeholder="2019"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <button
+                        type="button"
+                        onClick={() => removePastPresident(idx)}
+                        className="text-sm text-red-600 hover:text-red-800 cursor-pointer bg-transparent border-0 px-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {pastPresidents.length === 0 && (
+                  <p className="text-sm text-charcoal-light">No past presidents yet.</p>
+                )}
+              </div>
+              <div className="mt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={addPastPresident}
+                  className="px-4 py-2 rounded-lg border border-charcoal/15 text-sm text-charcoal hover:bg-charcoal/5 cursor-pointer"
+                >
+                  + Add past president
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePastPresidentsSave}
+                  disabled={pastPresidentsSaving}
+                  className="btn-primary !py-2.5 !px-6 cursor-pointer"
+                >
+                  {pastPresidentsSaving ? 'Saving...' : 'Save Past Presidents'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

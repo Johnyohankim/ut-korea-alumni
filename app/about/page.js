@@ -59,6 +59,7 @@ export default function AboutPage() {
   const { locale } = useLanguage()
   const [positions, setPositions] = useState([])
   const [greeting, setGreeting] = useState({ en: '', ko: '' })
+  const [pastPresidents, setPastPresidents] = useState([])
 
   useEffect(() => {
     fetch('/api/org').then(r => r.json()).then(d => setPositions(d.positions || []))
@@ -66,6 +67,7 @@ export default function AboutPage() {
       const s = d.settings || {}
       setGreeting({ en: s.greeting_president || '', ko: s.greeting_president_ko || '' })
     }).catch(() => {})
+    fetch('/api/past-presidents').then(r => r.json()).then(d => setPastPresidents(d.pastPresidents || [])).catch(() => {})
   }, [])
 
   const getMembers = (committeeKey, role) =>
@@ -220,9 +222,46 @@ export default function AboutPage() {
           <h2 className="font-display text-2xl font-semibold text-charcoal mb-6">
             {locale === 'ko' ? '역대 회장' : 'Past Presidents'}
           </h2>
-          <div className="text-charcoal-light text-sm">
-            {locale === 'ko' ? '준비 중입니다.' : 'Coming soon.'}
-          </div>
+          {pastPresidents.length === 0 ? (
+            <div className="text-charcoal-light text-sm">
+              {locale === 'ko' ? '준비 중입니다.' : 'Coming soon.'}
+            </div>
+          ) : (
+            <ul className="space-y-4">
+              {pastPresidents.map(pp => {
+                const displayName = locale === 'ko' && pp.name_ko ? pp.name_ko : pp.name
+                const term = `${pp.term_start}–${pp.term_end}`
+                const content = (
+                  <div className="flex items-center gap-4">
+                    {pp.profile_image_url ? (
+                      <img src={pp.profile_image_url} alt={displayName || ''} className="w-14 h-14 rounded-full object-cover ring-2 ring-burnt-orange/30 group-hover:ring-burnt-orange transition-all" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-burnt-orange to-burnt-dark flex items-center justify-center text-white font-display text-lg font-bold ring-2 ring-burnt-orange/30">
+                        {displayName?.[0] || '?'}
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-display text-base font-semibold text-charcoal group-hover:text-burnt-orange transition-colors">
+                        {displayName || (locale === 'ko' ? '(이름 없음)' : '(Unknown)')}
+                      </div>
+                      <div className="text-sm text-charcoal-light">{term}</div>
+                    </div>
+                  </div>
+                )
+                return (
+                  <li key={pp.id}>
+                    {pp.member_id ? (
+                      <Link href={`/members/${pp.member_id}`} className="no-underline group block">
+                        {content}
+                      </Link>
+                    ) : (
+                      <div className="group">{content}</div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
         </div>
 
         {/* Contact section */}

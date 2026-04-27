@@ -120,6 +120,30 @@ export async function GET(request) {
       )
     `
 
+    // Past presidents table
+    await sql`
+      CREATE TABLE IF NOT EXISTS past_presidents (
+        id SERIAL PRIMARY KEY,
+        member_id INTEGER REFERENCES members(id) ON DELETE SET NULL,
+        term_start INTEGER NOT NULL,
+        term_end INTEGER NOT NULL,
+        sort_order INTEGER DEFAULT 0
+      )
+    `
+
+    // Seed past presidents (idempotent — only runs when table is empty)
+    const { rows: ppCount } = await sql`SELECT COUNT(*)::int AS n FROM past_presidents`
+    if (ppCount[0]?.n === 0) {
+      await sql`
+        INSERT INTO past_presidents (member_id, term_start, term_end, sort_order)
+        SELECT id, 2015, 2019, 0 FROM members WHERE name_ko = '구자균' LIMIT 1
+      `
+      await sql`
+        INSERT INTO past_presidents (member_id, term_start, term_end, sort_order)
+        SELECT id, 2020, 2024, 1 FROM members WHERE name_ko = '지정삼' LIMIT 1
+      `
+    }
+
     // Add columns to members (idempotent)
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false`
     await sql`ALTER TABLE members ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255)`
