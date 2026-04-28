@@ -72,6 +72,22 @@ export default function AboutPage() {
     fetch('/api/teams').then(r => r.json()).then(d => setTeams(d.teams || [])).catch(() => {})
   }, [])
 
+  // Scroll to hash anchor after async content loads.
+  // Re-runs whenever positions/teams/pastPresidents arrive so scroll lands
+  // even if the section was rendered after initial mount.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const scrollToHash = () => {
+      const hash = window.location.hash.slice(1)
+      if (!hash) return
+      const el = document.getElementById(hash)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    scrollToHash()
+    window.addEventListener('hashchange', scrollToHash)
+    return () => window.removeEventListener('hashchange', scrollToHash)
+  }, [positions.length, teams.length, pastPresidents.length, greeting])
+
   const getMembers = (committeeKey, role) =>
     positions.filter(p => p.committee === committeeKey && p.role === role && p.member_id)
 
